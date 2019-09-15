@@ -2,39 +2,41 @@
 #include "../exception/exception.h"
 #include <iostream>
 
+namespace {
+template <typename T>
+class LinkNode
+{
+    T data;
+    LinkNode<T> *next;
+    LinkNode<T> *previous;
+public:
+    LinkNode(): next(nullptr), previous(nullptr) {}
+    explicit LinkNode(const T &newdata): next(nullptr), previous(nullptr), data(newdata) {}
+    ~LinkNode() {
+        next = previous = nullptr;
+    }
+    
+    LinkNode<T> *getNext() const {
+        return next;
+    }
+    LinkNode<T> *getPrevious() const {
+        return previous;
+    }
+    T getData() const {
+        return data;
+    }
+    void setData(const T &newdata) {
+        data = newdata;
+    }
+    void setNext(LinkNode<T> *newnext) {
+        next = newnext;
+    } 
+    void setPrevious(LinkNode<T> *newprevious) {
+        previous = newprevious;
+    }
+};
+}
 namespace DS {
-    template <typename T>
-    class LinkNode
-    {
-        T data;
-        LinkNode<T> *next;
-        LinkNode<T> *previous;
-    public:
-        LinkNode(): next(nullptr), previous(nullptr) {}
-        explicit LinkNode(const T &newdata): next(nullptr), previous(nullptr), data(newdata) {}
-        ~LinkNode() {
-            next = previous = nullptr;
-        }
-        
-        LinkNode<T> *getNext() const {
-            return next;
-        }
-        LinkNode<T> *getPrevious() const {
-            return previous;
-        }
-        T getData() const {
-            return data;
-        }
-        void setData(const T &newdata) {
-            data = newdata;
-        }
-        void setNext(LinkNode<T> *newnext) {
-            next = newnext;
-        } 
-        void setPrevious(LinkNode<T> *newprevious) {
-            previous = newprevious;
-        }
-    };
     template <typename T>
     class Link
     {
