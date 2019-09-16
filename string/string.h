@@ -4,6 +4,8 @@
 #include <cstring>
 
 namespace DS {
+    /* TODO: string的底层实现是用一个char类型的动态数组，但是这样改变它的大小的时候就会很麻烦 */
+    /* 所以将来要替换成一个预先多分配空间的结构，但是它又能保持动态特性，就像vector */
     class String
     {
         char *str;
@@ -49,6 +51,7 @@ namespace DS {
         const String operator = (const String &other);
         const String operator = (const String &&other);
         const char operator[] (const int at) const;
+        String splice(int left, int right) const;
     };
 
     const String String::operator + (const String &rhs) const {
@@ -95,5 +98,20 @@ namespace DS {
             throw DSMemoryExceed();
         }
         return str[at];
+    }
+    String String::splice(int left, int right) const {
+        String newstr;
+        if(right > this->size() || left >= this->size()) {
+            return newstr;
+        }
+        else if(right <= left) {
+            return newstr;
+        }
+        newstr.str = new char[right-left+1];
+        for(int i = left; i < right; ++i) {
+            newstr.str[i-left] = str[i];
+        }
+        newstr.str[right-left] = '\0';
+        return newstr;
     }
 }
