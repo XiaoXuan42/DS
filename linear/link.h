@@ -70,6 +70,8 @@ namespace DS {
         bool remove(int at); //如果发生越界那么这个函数什么也不做，并且返回一个false
         
         T get(int at) const;
+        T getFront() const;
+        T getTail() const;
         bool modify(const T &data, int at);
     };
     template<typename T>
@@ -149,6 +151,20 @@ namespace DS {
             throw DSMemoryExceed();
         }
         return fork->getNext()->getData();
+    }
+    template<typename T>
+    T Link<T>::getFront() const {
+        if(fakehead.getNext() == nullptr) {
+            throw DSMemoryExceed();
+        }
+        return fakehead.getNext()->getData();
+    }
+    template<typename T>
+    T Link<T>::getTail() const {
+        if(tail == &fakehead) {
+            throw DSMemoryExceed();
+        }
+        return tail->getData();
     }
     template<typename T>
     bool Link<T>::modify(const T &data, int at) {
