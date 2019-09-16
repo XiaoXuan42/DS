@@ -6,7 +6,7 @@ namespace DS
 {
     class MiddleExpression
     {
-
+        string 
     };
     class SuffixExpression
     {
