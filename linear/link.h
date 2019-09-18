@@ -58,6 +58,11 @@ namespace DS {
             tail = &fakehead;
             cnt = 0;
         }
+        Link<T>(const Link<T> &other);
+        Link<T>(const Link<T> &&other);
+        Link<T> & operator = (const Link<T> &other);
+        Link<T> & operator = (const Link<T> &&other);
+
         bool empty() const {
             return cnt == 0;
         }
@@ -74,6 +79,50 @@ namespace DS {
         T getTail() const;
         bool modify(const T &data, int at);
     };
+    template<typename T>
+    Link<T>:: Link(const Link<T> &other) {
+        LinkNode<T> *otherCur = other.fakehead.getNext();
+        LinkNode<T> *cur = &fakehead;
+        while(otherCur != nullptr) {
+            LinkNode<T> *newnode = new LinkNode<T>(otherCur->getData());
+            cur->setNext(newnode);
+            cur = cur->getNext();
+            otherCur = otherCur->getNext();
+        }
+        tail = cur;
+        cnt = other.size();
+    }
+
+    template<typename T>
+    Link<T>:: Link(const Link<T> &&other) {
+        fakehead.setNext(other.fakehead.getNext());
+        other.fakehead.setNext(nullptr);
+        tail = other.tail;
+        cnt = other.size();
+    }
+    template<typename T>
+    Link<T> & Link<T>::operator = (const Link<T> &other) {
+        this->~Link();
+        LinkNode<T> *otherCur = other.fakehead.getNext();
+        LinkNode<T> *cur = &fakehead;
+        while(otherCur != nullptr) {
+            LinkNode<T> *newnode = new LinkNode<T>(otherCur->getData());
+            cur->setNext(newnode);
+            cur = cur->getNext();
+            otherCur = otherCur->getNext();
+        }
+        tail = cur;
+        cnt = other.size();
+    }
+    template<typename T>
+    Link<T> & Link<T>::operator = (const Link<T> &&other) {
+        this->~Link();
+        fakehead.setNext(other.fakehead.getNext());
+        other.fakehead.setNext(nullptr);
+        tail = cnt;
+        cnt = other.size();
+    }
+    
     template<typename T>
     LinkNode<T> * Link<T>::getPointer(int at) const {
         if(at > cnt) {
