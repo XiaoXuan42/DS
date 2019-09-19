@@ -33,17 +33,32 @@ namespace DS
             capacity = 0;
         }
         Vector(const Vector &other);
-        Vector(const Vector &&other);
+        Vector(Vector &&other);
         Vector<T> & operator = (const Vector<T> &other);
-        Vector<T> & operator = (const Vector<T> &&other);
+        Vector<T> & operator = (Vector<T> &&other);
 
-        size_t cap() const {
+        size_t size() const {
+            return used / sizeof(T);
+        }
+        bool cut(int at) const {
+            if(used / sizeof(T) < at)   return false;
+            used = at * sizeof(T);
+            return true;
+        }
+
+        int cap() const {
             return capacity;
         }
-        const T operator [] (const int at) const; //usesd only for read
+
+        T * getRaw() const {
+            return array;
+        }
+        const T operator [] (const int at) const;
         T & operator [] (int at);
+        Vector<T> operator + (const Vector<T> &rhs) const; //两个向量相加
+
         void push_back(const T &data);
-        bool resize(int cnt);
+        bool resize(int cnt); //resize只会改变capacity，不会改变used，如果要改变used，请使用cut
     };
     template<typename T>
     void Vector<T>::copyBasic(Vector<T> &other) const {
@@ -58,24 +73,41 @@ namespace DS
         other.copyBasic(*this);
     }
     template<typename T>
-    Vector<T>::Vector(const Vector<T> &&other) {
+    Vector<T>::Vector(Vector<T> &&other) {
         array = other.array;
         other.array = nullptr;
         other.copyBasic(*this);
     }
     template<typename T>
     Vector<T> & Vector<T>::operator = (const Vector<T> &other) {
+        if(this == &other) {
+            return *this;
+        }
         this->~Vector();
         array = new T[other.capacity / sizeof(T)];
         other.copyContent(array);
         other.copyBasic(*this);
+        return *this;
     }
     template<typename T>
-    Vector<T> & Vector<T>::operator = (const Vector<T> &&other) {
+    Vector<T> & Vector<T>::operator = (Vector<T> &&other) {
         this->~Vector();
         array = other.array;
         other.copyBasic(*this);
         other.array = nullptr;
+        return *this;
+    }
+    template<typename T>
+    Vector<T> Vector<T>::operator + (const Vector<T> &rhs) const {
+        Vector<T> newVec;
+        newVec.resize((this->size() + rhs.size()));
+        for(int i = 0; i < this->size(); ++i) {
+            newVec.push_back(array[i]);
+        }
+        for(int i = 0; i < rhs.size(); ++i) {
+            newVec.push_back(rhs.array[i]);
+        }
+        return newVec;
     }
 
     template<typename T>
@@ -87,7 +119,7 @@ namespace DS
     }
     template<typename T>
     void Vector<T>::copyContent(T * const target) const {
-        for(int i = 0; i < used / sizeof(T); ++i) {
+        for(size_t i = 0; i < used / sizeof(T); ++i) {
             target[i] = array[i];
         }
     }
@@ -104,10 +136,10 @@ namespace DS
     template<typename T>
     T & Vector<T>::get(int at) {
         at = at < 0 ? used / sizeof(T) + at : at;
-        if(at < 0 || at >= capacity / sizeof(T)) {
+        if(at < 0 || (unsigned)at >= capacity / sizeof(T)) {
             throw DS::DSMemoryExceed();
         }
-        if(at >= used / sizeof(T)) {
+        if((unsigned)at >= used / sizeof(T)) {
             used = (at + 1) * sizeof(T);
         }
         return array[at];
@@ -122,14 +154,14 @@ namespace DS
         if(at < 0) {
             throw DS::DSMemoryExceed();
         }
-        if(at >= capacity / sizeof(T)) {
+        if((unsigned)at >= capacity / sizeof(T)) {
             allocNew((at+1) * sizeof(T));
         }
         return get(at);
     }
     template<typename T>
     bool Vector<T>::resize(int cnt) {
-        if(cnt < used / sizeof(T)) {
+        if(cnt <= 0) {
             return false;
         }
         T *newarray = new T[cnt];

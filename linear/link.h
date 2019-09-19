@@ -11,7 +11,7 @@ class LinkNode
     LinkNode<T> *previous;
 public:
     LinkNode(): next(nullptr), previous(nullptr) {}
-    explicit LinkNode(const T &newdata): next(nullptr), previous(nullptr), data(newdata) {}
+    explicit LinkNode(const T &newdata): data(newdata), next(nullptr), previous(nullptr) {}
     ~LinkNode() {
         next = previous = nullptr;
     }
@@ -102,6 +102,9 @@ namespace DS {
     }
     template<typename T>
     Link<T> & Link<T>::operator = (const Link<T> &other) {
+        if(this == &other) {
+            return *this;
+        }
         this->~Link();
         LinkNode<T> *otherCur = other.fakehead.getNext();
         LinkNode<T> *cur = &fakehead;
@@ -113,6 +116,7 @@ namespace DS {
         }
         tail = cur;
         cnt = other.size();
+        return *this;
     }
     template<typename T>
     Link<T> & Link<T>::operator = (const Link<T> &&other) {
@@ -121,6 +125,7 @@ namespace DS {
         other.fakehead.setNext(nullptr);
         tail = cnt;
         cnt = other.size();
+        return *this;
     }
     
     template<typename T>
