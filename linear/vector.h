@@ -18,11 +18,11 @@ namespace DS
         void resetPointer(const T * const target); //将自己的内容删除，并且设置指针为target
         void copyContent(T * const target) const; //将自己的内容复制到target中
         void copyBasic(Vector &other) const;
-        void allocNew(size_t newsz); //设置自己的空间为newsz
-        T & get(const int at) const;        
+        void allocNew(size_t newsz); //设置自己的空间大于newsz
+        T & get(const int at);        
 
     public:
-        Vector(): curTwoPow(4), capacity(0), used(0), array(nullptr) {}
+        Vector(): curTwoPow(1), capacity(0), used(0), array(nullptr) {}
         ~Vector() {
             if(array != nullptr) {
                 delete array;
@@ -42,7 +42,7 @@ namespace DS
         }
         const T operator [] (const int at) const; //usesd only for read
         T & operator [] (int at);
-        void push(const T &data);
+        void push_back(const T &data);
         bool resize(int cnt);
     };
     template<typename T>
@@ -53,7 +53,7 @@ namespace DS
     }
     template<typename T>
     Vector<T>::Vector(const Vector<T> &other) {
-        array = new T[capacity / sizeof(T)];
+        array = new T[other.capacity / sizeof(T)];
         other.copyContent(array);
         other.copyBasic(*this);
     }
@@ -95,17 +95,20 @@ namespace DS
     void Vector<T>::allocNew(size_t newsz) {
         while(capacity < newsz) {
             capacity += (1ll << curTwoPow) * sizeof(T);
-            curTwoPow = curTwoPow < Vector::MaxSingleTwoPow ? MaxSingleTwoPow : curTwoPow + 1;
+            curTwoPow = curTwoPow < Vector::MaxSingleTwoPow ? curTwoPow + 1 : Vector::MaxSingleTwoPow;
         }
         T *newarray = new T[capacity/sizeof(T)];
         this->copyContent(newarray);
         this->resetPointer(newarray);
     }
     template<typename T>
-    T & Vector<T>::get(int at) const {
+    T & Vector<T>::get(int at) {
         at = at < 0 ? used / sizeof(T) + at : at;
-        if(at >= used / sizeof(T) || at < 0) {
+        if(at < 0 || at >= capacity / sizeof(T)) {
             throw DS::DSMemoryExceed();
+        }
+        if(at >= used / sizeof(T)) {
+            used = (at + 1) * sizeof(T);
         }
         return array[at];
     }
@@ -121,7 +124,6 @@ namespace DS
         }
         if(at >= capacity / sizeof(T)) {
             allocNew((at+1) * sizeof(T));
-            used = (at+1) * sizeof(T);
         }
         return get(at);
     }
@@ -142,7 +144,7 @@ namespace DS
         return true;
     }
     template<typename T>
-    void Vector<T>::push(const T &data) {
+    void Vector<T>::push_back(const T &data) {
         if(used == capacity) {
             allocNew(used + sizeof(T));
         }
