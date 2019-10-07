@@ -1,7 +1,7 @@
 #pragma once
 #include <cstddef>
+#include <cstdlib>
 
-//reference: 《STL源码分析》by侯捷
 namespace DS {
     struct input_iterator_tag {};
     struct output_iterator_tag {};
@@ -42,4 +42,18 @@ namespace DS {
         typedef const T* pointer;
         typedef const T& reference;
     };
+
+    template<typename Iterator>
+    inline typename iterator_traits<Iterator>::iterator_category iterator_category(const Iterator &) {
+        typedef typename iterator_traits<Iterator>::iterator_category category;
+        return category();
+    }
+    template<typename Iterator>
+    inline typename iterator_traits<Iterator>::value_type * value_type(const Iterator &) {
+        return static_cast<typename iterator_traits<Iterator>::value_type *>(nullptr);
+    }
+    template<typename Iterator>
+    inline typename iterator_traits<Iterator>::difference_type * difference_type(const Iterator &) {
+        return static_cast<typename iterator_traits<Iterator>::difference_type *>(nullptr);
+    }
 }
