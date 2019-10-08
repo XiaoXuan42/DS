@@ -1,3 +1,4 @@
 #Directory
 test
 .vscode
+*.o
