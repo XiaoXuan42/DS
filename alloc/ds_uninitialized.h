@@ -77,4 +77,5 @@ namespace DS {
     inline ForwardIterator __uninitialized_fill_aux(InputIterator first, InputIterator last, const T &x, ds_true_type tt) {
         __uninitialized_fill_aux(first, last, x, ds_false_type()); //TODO: replace this with fill()
     }
+
 }
