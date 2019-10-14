@@ -2,6 +2,7 @@
 
 #include "../alloc/ds_alloc.h"
 #include "../alloc/ds_uninitialized.h"
+#include "../../algorithm/shift.h"
 
 namespace DS {
     template<typename T, typename Alloc=alloc>
@@ -28,8 +29,31 @@ namespace DS {
         }
         void insert_aux(iterator position, const reference x) {
             if(finish == end_of_storage) {
+                const size_type old_sz = capacity();
+                const size_type new_sz = old_sz ? old_sz * 2 : 1;
+
+                iterator new_start = data_alloc::allocate(new_sz);
+                iterator new_finish;
+                try {
+                    new_finish = unintialized_copy(start, position, new_start);
+                    construct(new_finish, x);
+                    ++new_finish;
+                    new_finish = unintialized_copy(position, finish, new_finish);
+                }
+                catch(...) {
+                    destroy(new_start, new_finish);
+                    data_alloc::deallocate(new_start, new_sz);
+                }
+
+                destroy(start, old_sz);
+                start = new_start;
+                finish = new_finish;
+                end_of_storage = start + new_sz;
             }
             else {
+                shift_on(position, finish);
+                ++finish;
+                *position = x;
             }
         }
         void fill_initialize(size_type n, const reference value) {
@@ -72,6 +96,11 @@ namespace DS {
 
         void push_back(const T &target) {
             if(finish == end_of_storage) { // 申请的存储空间不足 
+                insert_aux(end(), target); //借用insert_aux中的处理存储空间不足的机制
+            }
+            else {
+                construct(finish, target);
+                ++finish;
             }
         }
         void pop_back() {
@@ -79,6 +108,12 @@ namespace DS {
                 --finish;
                 destroy(finish);
             }
+        }
+        reference front() {
+            return *begin();
+        }
+        reference back() {
+            return *(end() - 1);
         }
     };
 }
