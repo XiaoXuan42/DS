@@ -11,7 +11,7 @@ namespace DS {
     class malloc_alloc_template {
         static void * oom_malloc(const size_t);
         static void * oom_realloc(void *, const size_t);
-        //oom: out of memory
+        //oom: out of memory 溢出处理
         static std::new_handler oom_handler; // new_handler : typedef void *(new_handler)()
 
     public:
@@ -83,16 +83,16 @@ namespace DS {
     template<int inst>
     class pool_alloc_template
     {
-        const static int _align = 8; //_align must be a multiple of the size of a pointer
+        const static int _align = 8; //_align should be a multiple of the size of a pointer, _align 应该是一个指针长度的整数倍,至少不要小于一个指针的长度
         const static int _max_bytes = 128;
         constexpr static int _max_list_size = _max_bytes / _align;
 
         static size_t round_up(const size_t n) {
-            return n ? (n + _align - 1) & ~(_align - 1) : _align; // when n is zero, return it _align
+            return n ? (n + _align - 1) & ~(_align - 1) : _align; // when n is zero, return it _align特殊情况:n为0的时候直接返回_align
         }
         static size_t freelist_index(const size_t n) {
-            //find the index that can accommodate the size n
-            if(n == 0)  return 0; // if n == 0, then n - 1 will lead to disasters
+            //找到比n大的并且能够被_align整除的最小的整数对应在free_list中的下标,find the index that can accommodate the size n
+            if(n == 0)  return 0; // if n == 0, then n - 1 will lead to disasters 特殊情况:如果n是0,那么n-1就会变成一个极大的数
             else
                 return (n + _align - 1) / _align - 1;
         }
@@ -263,4 +263,23 @@ namespace DS {
     #else
         typedef pool_alloc alloc;
     #endif
+    template<typename T, typename Alloc>
+    class simple_alloc 
+    {
+    public:
+        static T *allocate(size_t n) {
+            return n == 0 ? 0 : (T*)Alloc::allocate(n * sizeof(T));
+        }
+        static T *allocate(void) {
+            return (T*)Alloc::allocate(sizeof(T));
+        }
+        static void *deallocate(T *p, size_t n) {
+            if(n != 0) {
+                Alloc::deallocate(p, n * sizeof(T));
+            }
+        }
+        static void deallocate(T *p) {
+            Alloc::deallocate(p, sizeof(T));
+        }
+    };
 }
