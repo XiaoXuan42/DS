@@ -56,6 +56,12 @@ namespace DS {
                 *position = x;
             }
         }
+        void insert(iterator position, size_type n, const reference x) {
+            if(n != 0) {
+                if(size_type(end_of_storage - finish) >= n) {
+                }
+            }
+        }
         void fill_initialize(size_type n, const reference value) {
             start = allocate_and_fill(n, value);
             finish = start + n;
@@ -114,6 +120,37 @@ namespace DS {
         }
         reference back() {
             return *(end() - 1);
+        }
+        iterator erase(iterator first, iterator last) {
+            iterator i = copy(last, finish, first);
+            destroy(i, finish);
+            finish = i;
+            return first;
+        }
+        iterator erase(iterator position) {
+            if(position + 1 != end()) {
+                copy(position + 1, finish, position);
+            }
+            --finish;
+            destroy(finish);
+            return position;
+        }
+        void resize(size_type new_size, const T &x) {
+            if(new_size < size()) {
+                erase(begin() + new_size, end());
+            }
+            else {
+                insert(end(), new_size - size(), x);
+            }
+        }
+        void resize(size_type new_size) {
+            resize(new_size, T());
+        }
+        void clear() {
+            erase(begin(), end());
+        }
+        reference operator [] (size_type n) {
+
         }
     };
 }
