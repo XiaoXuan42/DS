@@ -8,7 +8,7 @@ namespace DS
 {
     template<typename InputIterator1, typename InputIterator2>
     inline bool equal(InputIterator1 first1, InputIterator1 second1, InputIterator2 first2) {
-        for( ; first1 != second1; ++first1) {
+        for( ; first1 != second1; ++first1, ++first2) {
             if(*first1 != *first2) {
                 return false;
             }
@@ -39,15 +39,15 @@ namespace DS
         return first;
     }
 
-    template<typename ForwardIterator1, typename ForwardIterator2>
-    inline void iter_swap(ForwardIterator1 a, ForwardIterator2 b) {
-        __iter_swap(a, b, value_type(a));
-    }
     template<typename ForwardIterator1, typename ForwardIterator2, typename T>
     inline void __iter_swap(ForwardIterator1 a, ForwardIterator2 b, T*) {
         T tmp = *a;
         *a = *b;
         *b = tmp; 
+    }
+    template<typename ForwardIterator1, typename ForwardIterator2>
+    inline void iter_swap(ForwardIterator1 a, ForwardIterator2 b) {
+        __iter_swap(a, b, value_type(a));
     }
 
     template<typename InputIterator1, typename InputIterator2>
@@ -64,8 +64,6 @@ namespace DS
             else {
                 return false;
             }
-            ++first1;
-            ++first2;
         }
         if(first1 == last1) return true;
         else return false;
@@ -113,6 +111,33 @@ namespace DS
     }
 
     /* copy */
+    template<typename RandomAccessIterator, typename OutputIterator, typename Distance>
+    OutputIterator __copy_d(RandomAccessIterator first, RandomAccessIterator last, OutputIterator result, Distance *) {
+        for(Distance n = last - first; n > 0; --n, ++result, ++first) {
+            *result = *first;
+        }
+        return result;
+    }
+    template<typename T>
+    T* __copy_t(const T* first, const T* last, T* result, ds_false_type) {
+        return __copy_d(first, last, result, difference_type(first));
+    }
+    template<typename T>
+    T* __copy_t(const T* first, const T* last, T* result, ds_true_type) {
+        memmove(result, first, sizeof(T) * (last - first));
+        return result + (last - first);
+    }
+    template<typename InputIterator, typename OutputIterator>
+    OutputIterator __copy(InputIterator first, InputIterator last, OutputIterator result, input_iterator_tag) {
+        for( ; first != last; ++first, ++result) {
+            *result = *first;
+        }
+        return result;
+    }
+    template<typename RandomAccessIterator, typename OutputIterator>
+    OutputIterator __copy(RandomAccessIterator first, RandomAccessIterator last, OutputIterator result, random_iterator_tag) {
+        return __copy_d(first, last, result, difference_type(first));
+    }
     template<typename InputIterator, typename OutputIterator>
     struct __copy_dispatch
     {
@@ -142,51 +167,42 @@ namespace DS
     }
     template<>
     inline char *copy(const char * first, const char * last, char *result) {
-        memmove(result, first, last-first);
+        memmove(result, first, sizeof(char) * (last-first));
         return result + (last - first);
     }
     template<>
     inline wchar_t *copy(const wchar_t * first, const wchar_t * last, wchar_t *result) {
-        memmove(result, first, last - first);
+        memmove(result, first, sizeof(wchar_t) * (last - first));
         return result + (last - first);
-    }
-
-    template<typename InputIterator, typename OutputIterator>
-    OutputIterator __copy(InputIterator first, InputIterator last, OutputIterator result, input_iterator_tag) {
-        for( ; first != last; ++first, ++result) {
-            *result = *first;
-        }
-        return result;
-    }
-    template<typename RandomAccessIterator, typename OutputIterator>
-    OutputIterator __copy(RandomAccessIterator first, RandomAccessIterator last, OutputIterator result, random_iterator_tag) {
-        return __copy_d(first, last, result, difference_type(first));
-    }
-    
-    template<typename InputIterator, typename OutputIterator>
-    OutputIterator __copy_t(InputIterator first, InputIterator last, OutputIterator result, ds_false_type) {
-        return __copy_d(first, last, result, difference_type(first));
-    }
-    template<typename InputIterator, typename OutputIterator>
-    OutputIterator __copy_t(InputIterator first, InputIterator last, OutputIterator result, ds_true_type) {
-        memmove(result, first, last - first);
-        return result + (last - first);
-    }
-    template<typename RandomAccessIterator, typename OutputIterator, typename Distance>
-    OutputIterator __copy_d(RandomAccessIterator first, RandomAccessIterator last, OutputIterator result, Distance *) {
-        for(Distance n = last - first; n > 0; --n, ++result, ++first) {
-            *result = *first;
-        }
-        return result;
     }
     /* end_copy */
 
     /* copy_backward */
+    template<typename RandomAccessIterator, typename BidirectionalIterator2, typename Distance>
+    BidirectionalIterator2 __copy_backward_d(RandomAccessIterator first, RandomAccessIterator last, BidirectionalIterator2 result, Distance *) {
+        Distance n = last - first;
+        while(n > 0) {
+            --result;
+            --last;
+            *result = *last;            
+            --n;
+        }
+        return result;
+    }
+    template<typename T>
+    T* __copy_backward_t(const T* first, const T* last, T* result, ds_false_type) {
+        return __copy_backward_d(first, last, result, difference_type(first));
+    }
+    template<typename T>
+    T* __copy_backward_t(const T* first, const T* last, T* result, ds_true_type) {
+        memmove(result - (last - first), first, sizeof(T) * (last - first));
+        return result - (last - first);
+    }
     template<typename BidirectionalIterator1, typename BidirectionalIterator2>
     struct __copy_backward_dispatch
     {
         BidirectionalIterator2 operator() (BidirectionalIterator1 first, BidirectionalIterator1 last, BidirectionalIterator2 result) {
-            return __copy_backward(first, last, result, iterator_category(first));
+            return __copy_backward(first, last, result, iterator_category(first)());
         }
     };
     template<typename T>
@@ -211,12 +227,12 @@ namespace DS
     }
     template<>
     inline char *copy_backward(const char * first, const char * last, char *result) {
-        memmove(result - (last - first), first, last-first);
+        memmove(result - (last - first), first, sizeof(char) * (last-first));
         return result - (last - first);
     }
     template<>
     inline wchar_t *copy_backward(const wchar_t * first, const wchar_t * last, wchar_t *result) {
-        memmove(result - (last - first), first, last - first);
+        memmove(result - (last - first), first, sizeof(wchar_t) * (last - first));
         return result - (last - first);
     }
 
@@ -234,25 +250,5 @@ namespace DS
         return __copy_backward_d(first, last, result, difference_type(first));
     }
     
-    template<typename BidirectionalIterator1, typename BidirectionalIterator2>
-    BidirectionalIterator2 __copy_backward_t(BidirectionalIterator1 first, BidirectionalIterator1 last, BidirectionalIterator2 result, ds_false_type) {
-        return __copy_backward_d(first, last, result, difference_type(first));
-    }
-    template<typename BidirectionalIterator1, typename BidirectionalIterator2>
-    BidirectionalIterator2 __copy_backward_t(BidirectionalIterator1 first, BidirectionalIterator1 last, BidirectionalIterator2 result, ds_true_type) {
-        memmove(result - (last - first), first, last - first);
-        return result - (last - first);
-    }
-    template<typename RandomAccessIterator, typename BidirectionalIterator2, typename Distance>
-    BidirectionalIterator2 __copy_backward_d(RandomAccessIterator first, RandomAccessIterator last, BidirectionalIterator2 result, Distance *) {
-        Distance n = last - first;
-        while(n > 0) {
-            --result;
-            --last;
-            *result = *last;            
-            --n;
-        }
-        return result;
-    }
     /* end copy_backward_back */
 }
