@@ -25,13 +25,6 @@ namespace DS
         return init;
     }
 
-    template<typename InputIterator, typename OutputIterator>
-    OutputIterator adjacent_difference(InputIterator first, InputIterator last, OutputIterator result) {
-        if(first == last)   return; 
-        *result = *first;
-        return __adjacent_difference(first, last, result, value_type(first));
-        //这里没有使用书上的另一种写法，因为我觉得value_type可能会根据具体情况特化
-    }
     template<typename InputIterator, typename OutputIterator, typename T>
     OutputIterator __adjacent_difference(InputIterator first, InputIterator last, OutputIterator result, T *) {
         T value = *first;
@@ -45,9 +38,16 @@ namespace DS
         }
         return result;
     }
+    template<typename InputIterator, typename OutputIterator>
+    OutputIterator adjacent_difference(InputIterator first, InputIterator last, OutputIterator result) {
+        if(first == last)   return result; 
+        *result = *first;
+        return __adjacent_difference(first, last, result, value_type(first));
+        //这里没有使用书上的另一种写法，因为我觉得value_type可能会根据具体情况特化
+    }
     template<typename InputIterator, typename OutputIterator, typename BinaryOperation>
     OutputIterator adjacent_difference(InputIterator first, InputIterator last, OutputIterator result, BinaryOperation op) {
-        if(first == last)   return; 
+        if(first == last)   return result; 
         *result = *first;
         return __adjacent_difference(first, last, result, value_type(first), op);
         //这里没有使用书上的另一种写法，因为我觉得value_type可能会根据具体情况特化
@@ -78,7 +78,7 @@ namespace DS
         return init;
     }
     template<typename InputIterator1, typename InputIterator2, typename BinaryOperation, typename T>
-    T inner_product(InputIterator1 first1, InputIterator2 last1, InputIterator2 first2, BinaryOperation op, T init) {
+    T inner_product(InputIterator1 first1, InputIterator2 last1, InputIterator2 first2, T init, BinaryOperation op) {
         InputIterator1 cur1 = first1;
         InputIterator2 cur2 = first2;
         while(cur1 != last1) {
@@ -89,14 +89,6 @@ namespace DS
         return init;
     }
     
-    template<typename InputIterator, typename OutputIterator>
-    OutputIterator partial_sum(InputIterator first, InputIterator last, OutputIterator result) {
-        if(first == last) {
-            return result;
-        }
-        *result = *first;
-        return __partial_sum(first, last, result, value_type(first));
-    }
     template<typename InputIterator, typename OutputIterator, typename T>
     OutputIterator __partial_sum(InputIterator first, InputIterator last, OutputIterator result, T*) {
         T value = *first;
@@ -105,7 +97,29 @@ namespace DS
         while(first != last) {
             T tmp = *first;
             *result = *first + value;
-            value += tmp;
+            value = value + tmp;
+            ++first;
+            ++result;
+        }
+        return result;
+    }
+    template<typename InputIterator, typename OutputIterator>
+    OutputIterator partial_sum(InputIterator first, InputIterator last, OutputIterator result) {
+        if(first == last) {
+            return result;
+        }
+        *result = *first;
+        return __partial_sum(first, last, result, value_type(first));
+    }
+    template<typename InputIterator, typename OutputIterator, typename BinaryOperation, typename T>
+    OutputIterator __partial_sum(InputIterator first, InputIterator last, OutputIterator result, BinaryOperation op, T*) {
+        T value = *first;
+        ++first;
+        ++result;
+        while(first != last) {
+            T tmp = *first;
+            *result = op(*first, value);
+            value = op(value, tmp);
             ++first;
             ++result;
         }
@@ -118,20 +132,6 @@ namespace DS
         }
         *result = *first;
         return __partial_sum(first, last, result, op, value_type(first));
-    }
-    template<typename InputIterator, typename OutputIterator, typename BinaryOperation, typename T>
-    OutputIterator __partial_sum(InputIterator first, InputIterator last, OutputIterator result, BinaryOperation op, T*) {
-        T value = *first;
-        ++first;
-        ++result;
-        while(first != last) {
-            T tmp = *first;
-            *result = *first + value;
-            value += tmp;
-            ++first;
-            ++result;
-        }
-        return result;
     }
     //TODO: add: pow
 }
