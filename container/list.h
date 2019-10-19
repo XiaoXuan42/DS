@@ -130,6 +130,36 @@ namespace DS
             }
             destroy_node(node);
         }
+        list(const list &rhs) {
+            empty_initialize();
+            link_type local_cur = node;
+            iterator cur = static_cast<iterator>(rhs.node->next);
+            while(cur.p_node != rhs.node) {
+                link_type tmp = create_node(*cur);
+                local_cur->next = tmp;
+                tmp->pre = local_cur;
+                local_cur = tmp;
+                ++cur;
+            }
+            local_cur->next = node;
+            node->pre = local_cur;
+        }
+        list& operator = (const list &rhs) {
+            clear();
+            link_type local_cur = node;
+            iterator cur = static_cast<iterator>(rhs.node->next);
+            while(cur.p_node != rhs.node) {
+                link_type tmp = create_node(*cur);
+                local_cur->next = tmp;
+                tmp->pre = local_cur;
+                local_cur = tmp;
+                ++cur;
+            }
+            local_cur->next = node;
+            node->pre = local_cur;
+            return *this;
+        }
+
         iterator begin() const { return (iterator)(node->next); }
         iterator end() const { return (iterator)(node); }
         bool empty() const {
@@ -169,9 +199,9 @@ namespace DS
             erase(--tmp);
         }
         void clear() {
-            link_node cur = node->next;
+            link_type cur = node->next;
             while(cur != node) {
-                link_node tmp = cur;
+                link_type tmp = cur;
                 cur = cur->next;
                 destroy(tmp);
             }
