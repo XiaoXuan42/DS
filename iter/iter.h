@@ -56,4 +56,36 @@ namespace DS {
     inline typename iterator_traits<Iterator>::difference_type * difference_type(const Iterator &) {
         return static_cast<typename iterator_traits<Iterator>::difference_type *>(nullptr);
     }
+    template<typename Iterator>
+    inline typename iterator_traits<Iterator>::difference_type __distance(Iterator first, Iterator last, input_iterator_tag) {
+        typename iterator_traits<Iterator>::difference_type n = 0;
+        while(first != last) {
+            ++first;
+            ++n;
+        }
+        return n;
+    }
+    template<typename Iterator>
+    inline typename iterator_traits<Iterator>::difference_type __distance(Iterator first, Iterator last, random_iterator_tag) {
+        return last - first;
+    }
+    template<typename Iterator>
+    inline typename iterator_traits<Iterator>::difference_type distance(Iterator first, Iterator last) {
+        return __distance(first ,last, iterator_category(first));
+    }
+
+    template<typename Iterator, typename Distance>
+    inline void __advance(Iterator &i, Distance n, input_iterator_tag) {
+        while(n--) {
+            ++i;
+        }
+    }
+    template<typename Iterator, typename Distance>
+    inline void __advance(Iterator &i, Distance n, random_iterator_tag) {
+        i = i + n;
+    }
+    template<typename Iterator, typename Distance>
+    inline void advance(Iterator &i, Distance n) {
+        return __advance(i, n, iterator_category(i));
+    }
 }
