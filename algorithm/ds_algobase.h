@@ -25,11 +25,12 @@ namespace DS
         return true;
     }
 
-    template<typename ForwardIterator, typename T>
-    void fill(ForwardIterator first, ForwardIterator last, const T &val) {
+    template<typename OutputIterator, typename T>
+    OutputIterator fill(OutputIterator first, OutputIterator last, const T &val) {
         for( ; first != last; ++first) {
             *first = val;
         }
+        return first;
     }
     template<typename OutputIterator, typename Size, typename T>
     OutputIterator fill_n(OutputIterator first, Size n, const T &val) {

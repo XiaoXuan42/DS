@@ -16,10 +16,6 @@ namespace DS {
         p->~T();
     }
 
-    template<typename ForwardIterator>
-    inline void destroy(ForwardIterator begin, ForwardIterator end) {
-        __destroy(begin, end, value_type(begin));
-    }
     template<typename ForwardIterator, typename T>
     inline void __destroy(ForwardIterator begin, ForwardIterator end, T* val) {
         typedef typename ds_type_traits<T>::has_trivial_destructor trivial_destructor;
@@ -33,7 +29,10 @@ namespace DS {
             destroy(&(*begin));
         }
     }
-
+    template<typename ForwardIterator>
+    inline void destroy(ForwardIterator begin, ForwardIterator end) {
+        __destroy(begin, end, value_type(begin));
+    }
     template<>
     inline void destroy(char *, char *) {}
     template<>
