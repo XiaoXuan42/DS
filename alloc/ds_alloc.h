@@ -271,6 +271,9 @@ namespace DS {
             return n == 0 ? 0 : (T*)Alloc::allocate(n * sizeof(T));
         }
         static T *allocate(void) {
+            /*
+                allocate memory enough to hold one element 
+            */
             return (T*)Alloc::allocate(sizeof(T));
         }
         static void *deallocate(T *p, size_t n) {
