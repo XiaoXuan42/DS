@@ -142,6 +142,27 @@ namespace DS {
             destroy(start, finish);
             deallocate();
         }
+        vector(const vector &rhs) {
+            start = data_alloc::allocate(rhs.capacity());
+            end_of_storage = start + rhs.capacity();
+            finish = uninitialized_copy(rhs.begin(), rhs.end(), begin());
+        }
+        vector & operator = (const vector &rhs) {
+            if(this == &rhs)    return *this;
+            destroy(start, finish);    
+            if(rhs.size() >= capacity()) {
+                deallocate();
+                const size_type old_sz = capacity();
+                const size_type new_sz = old_sz + max(old_sz, rhs.capacity()) + 1;
+                start = data_alloc::allocate(new_sz);
+                end_of_storage = start + new_sz;
+                finish = uninitialized_copy(rhs.begin(), rhs.end(), begin());
+            }
+            else {
+                finish = uninitialized_copy(rhs.begin(), rhs.end(), start);
+            }
+            return *this;
+        }
 
         iterator begin() const { return start; }
         iterator end() const { return finish; }
