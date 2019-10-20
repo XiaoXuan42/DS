@@ -5,7 +5,6 @@
 #include "../alloc/ds_uninitialized.h"
 #include "../algorithm/ds_algorithm.h"
 #include "../iter/iter.h"
-#include <iostream>
 
 namespace DS
 {
