@@ -395,5 +395,45 @@ namespace DS
                 return start + l_left;
             }
         }
+        iterator insert(iterator position, const value_type &x) {
+            if(position.cur == start.cur) {
+                push_front(x);
+                return start;
+            }
+            else if(position.cur == finish.cur) {
+                push_back(x);
+                iterator tmp = finish;
+                tmp--;
+                return tmp;
+            }
+            else {
+                return insert_aux(position, x);
+            }
+        }
+        iterator insert_aux(iterator pos, const value_type &x) {
+            difference_type index = pos - start;
+            if(index < size() / 2) {
+                push_front(front());
+                iterator front1 = start;
+                ++front1;
+                iterator front2 = front1;
+                ++front2;
+                pos = start + index;
+                iterator pos1 = pos;
+                ++pos1;
+                copy(front2, pos1, front1);
+            }
+            else {
+                push_back(back());
+                iterator back1 = finish;
+                --back1;
+                iterator back2 = back1;
+                --back2;
+                pos = start + index;
+                copy_backward(pos, back2, back1);
+            }
+            *pos = x;
+            return pos;
+        }
     };
 }
