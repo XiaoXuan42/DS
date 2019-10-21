@@ -7,6 +7,9 @@ Due to my limited ability, there may be many bugs in this project. Feel free to 
 
 Flag: I will finish this project before this semester ends!!! (haha)
 
+## Notice
+c++17 required
+
 ## Reference book 
 1. 《STL源码剖析》侯捷 华中科技大学出版社
 
