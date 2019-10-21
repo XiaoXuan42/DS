@@ -67,8 +67,8 @@ namespace DS {
         }
         return cur;
     }
-    template<typename InputIterator, typename ForwardIterator, typename T>
-    inline ForwardIterator __uninitialized_fill_aux(InputIterator first, InputIterator last, const T &x, ds_true_type tt) {
+    template<typename ForwardIterator, typename T>
+    inline ForwardIterator __uninitialized_fill_aux(ForwardIterator first, ForwardIterator last, const T &x, ds_true_type tt) {
         return fill(first, last, x);
     }
     template<typename ForwardIterator, typename T>

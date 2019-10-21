@@ -30,10 +30,10 @@ namespace DS
 
             using map_pointer = T**;
 
-            static difference_type buffer_sz() const {
+            static difference_type buffer_sz() {
                 return static_cast<difference_type>(__deque_segment_size(Buf_sz, sizeof(T)));
             }
-            T *cur, last, first;
+            T *cur, *last, *first;
             map_pointer node;
 
             void set_node(map_pointer new_node) {
@@ -82,8 +82,8 @@ namespace DS
                     cur += diff;
                 }
                 else {
-                    difference_type node_diff = offset > 0 ? offset / buffer_sz() : (offset + 1) / buffer_sz()) - 1;
-                    set_node(node_diff);
+                    difference_type node_diff = offset > 0 ? offset / buffer_sz() : (offset + 1) / buffer_sz() - 1;
+                    set_node(node + node_diff);
                     cur = first + (offset - node_diff * buffer_sz());
                 }
                 return *this;
@@ -103,10 +103,10 @@ namespace DS
                 return (node - rhs.node) * buffer_sz() + (cur - first) - (rhs.cur - rhs.first);
             }
 
-            T operator *() const {
+            reference operator *() const {
                 return *cur;
             }
-            pointer oeprator -> () const {
+            pointer operator -> () const {
                 return &(operator*());
             }
 
@@ -114,7 +114,7 @@ namespace DS
                 return *(*this + n);
             }
             bool operator < (const self &rhs) const {
-                return (node == rhs.node) ? cur < rhs.cur : node < x.node;
+                return (node == rhs.node) ? cur < rhs.cur : node < rhs.node;
             }
         };
     }
@@ -126,6 +126,7 @@ namespace DS
         using reference = T&;
         using pointer = T*;
         using size_type = size_t;
+        using difference_type = ptrdiff_t;
 
         using iterator = __deque_iterator<T, T&, T*, Buf_sz>;
         using const_iterator = __deque_iterator<const T, const T&, const T*, Buf_sz>;
@@ -133,7 +134,7 @@ namespace DS
         using map_pointer = T**;
 
     private:
-        static const size_t mini_mapsize = 8;
+        static inline const size_t mini_mapsize = 8;
         map_pointer map;
         iterator start, finish;
         size_type map_size;
@@ -141,7 +142,7 @@ namespace DS
         using data_alloc = simple_alloc<value_type, alloc>;
         using map_alloc = simple_alloc<pointer, alloc>;
 
-        static size_type buffer_sz() const {
+        static size_type buffer_sz() {
             return static_cast<size_type>(__deque_segment_size(Buf_sz, sizeof(T)));
         }
 
@@ -231,7 +232,7 @@ namespace DS
             finish.set_node(new_nstart + old_nodes_num - 1);
         }
         void reverse_map_front(size_type nodes_to_add = 1) {
-            if(start.node - map < nodes_to_add) {
+            if(static_cast<size_type>(start.node - map) < nodes_to_add) {
                 reallocate_map(nodes_to_add, true);
             }
         }
@@ -241,11 +242,49 @@ namespace DS
             }
         }
 
+        iterator insert_aux(iterator pos, const value_type &x) {
+            difference_type index = pos - start;
+            if(index < size() / 2) {
+                push_front(front());
+                iterator front1 = start;
+                ++front1;
+                iterator front2 = front1;
+                ++front2;
+                pos = start + index;
+                iterator pos1 = pos;
+                ++pos1;
+                copy(front2, pos1, front1);
+            }
+            else {
+                push_back(back());
+                iterator back1 = finish;
+                --back1;
+                iterator back2 = back1;
+                --back2;
+                pos = start + index;
+                copy_backward(pos, back2, back1);
+            }
+            *pos = x;
+            return pos;
+        }
+        void pop_front_aux() {
+            destroy(start.cur);
+            deallocate_node(start.first);
+            start.set_node(start.node + 1);
+            start.cur = start.first;
+        }
+        void pop_back_aux() {
+            deallocate_node(finish.first);    
+            finish.set_node(finish.node - 1);
+            finish.cur = finish.last - 1;
+            destroy(finish.cur);
+        }
+
     public:
-        deque(): map(nullptr), start(nullptr), finish(nullptr), map_size(0) {
+        deque(): map(nullptr), map_size(0) {
             create_map_nodes(0); //we can use this safely although it will allocate some memory :)
         }
-        deque(size_type n, const value_type &val): map(nullptr), start(nullptr), finish(nullptr), map_size(0) {
+        deque(size_type n, const value_type &val): map(nullptr), map_size(0) {
             fill_initialize(n, val);
         }
         iterator begin() { return start; }
@@ -323,18 +362,6 @@ namespace DS
                 pop_back_aux();
             }
         }
-        void pop_front_aux() {
-            destroy(start.cur);
-            deallocate_node(start.first);
-            start.set_node(start.node + 1);
-            start.cur = start.first;
-        }
-        void pop_back_aux() {
-            deallocate_node(finish.first);    
-            finish.set_node(finish.node - 1);
-            finish.cur = finish.last - 1;
-            destroy(finish.cur);
-        }
         void clear() {
             const size_t per_seg_sz = buffer_sz();
             for(map_pointer cur = start.node + 1; cur < finish.node; ++cur) {
@@ -344,7 +371,7 @@ namespace DS
             if(start.node != finish.node) {
                 destroy(start.first, start.last);
                 destroy(finish.first, finish.last);
-                data::alloc::deallocate(finish.first, per_seg_sz); // only deallocate the finish's node
+                data_alloc::deallocate(finish.first, per_seg_sz); // only deallocate the finish's node
             }
             else {
                 destroy(start.first, start.last);
@@ -410,30 +437,8 @@ namespace DS
                 return insert_aux(position, x);
             }
         }
-        iterator insert_aux(iterator pos, const value_type &x) {
-            difference_type index = pos - start;
-            if(index < size() / 2) {
-                push_front(front());
-                iterator front1 = start;
-                ++front1;
-                iterator front2 = front1;
-                ++front2;
-                pos = start + index;
-                iterator pos1 = pos;
-                ++pos1;
-                copy(front2, pos1, front1);
-            }
-            else {
-                push_back(back());
-                iterator back1 = finish;
-                --back1;
-                iterator back2 = back1;
-                --back2;
-                pos = start + index;
-                copy_backward(pos, back2, back1);
-            }
-            *pos = x;
-            return pos;
+        reference operator [] (int idx) {
+            return start[idx];
         }
     };
 }
