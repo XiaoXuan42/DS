@@ -130,6 +130,8 @@ namespace DS
 
         using iterator = __deque_iterator<T, T&, T*, Buf_sz>;
         using const_iterator = __deque_iterator<const T, const T&, const T*, Buf_sz>;
+        
+        using const_reference = const T&;
 
         using map_pointer = T**;
 
@@ -243,8 +245,8 @@ namespace DS
         }
 
         iterator insert_aux(iterator pos, const value_type &x) {
-            difference_type index = pos - start;
-            if(index < size() / 2) {
+            difference_type index = pos - start; // sure that pos - start is positive
+            if(index < static_cast<difference_type>(size() / 2)) {
                 push_front(front());
                 iterator front1 = start;
                 ++front1;
@@ -279,6 +281,29 @@ namespace DS
             finish.cur = finish.last - 1;
             destroy(finish.cur);
         }
+        void push_back_aux(const value_type &x) {
+            /*
+                this function will only be called when the memory left
+                on the right of current node can only holds one element
+                and we now need to push_back a new element
+            */
+           reverse_map_back();
+           *(finish.node + 1) = allocate_node();
+           construct(finish.cur, x);
+           finish.set_node(finish.node + 1);
+           finish.cur = finish.first;
+        }
+        void push_front_aux(const value_type &x) {
+            /*
+                this function will only be called there is no memory
+                left on the left of current node
+            */
+            reverse_map_front();
+            *(start.node - 1) = allocate_node();
+            start.set_node(start.node - 1);
+            start.cur = start.last - 1;
+            construct(start.cur, x);
+        }
 
     public:
         deque(): map(nullptr), map_size(0) {
@@ -312,18 +337,6 @@ namespace DS
                 push_back_aux(x);
             }
         }
-        void push_back_aux(const value_type &x) {
-            /*
-                this function will only be called when the memory left
-                on the right of current node can only holds one element
-                and we now need to push_back a new element
-            */
-           reverse_map_back();
-           *(finish.node + 1) = allocate_node();
-           construct(finish.cur, x);
-           finish.set_node(finish.node + 1);
-           finish.cur = finish.first;
-        }
         void push_front(const value_type &x) {
             if(start.cur == start.first) {
                 push_front_aux(x);
@@ -332,17 +345,6 @@ namespace DS
                 --start.cur;
                 construct(start.cur, x);
             }
-        }
-        void push_front_aux(const value_type &x) {
-            /*
-                this function will only be called there is no memory
-                left on the left of current node
-            */
-            reverse_map_front();
-            *(start.node - 1) = allocate_node();
-            start.set_node(start.node - 1);
-            start.cur = start.last - 1;
-            construct(start.cur, x);
         }
         void pop_front() {
             if(start.cur != start.last - 1) {
@@ -382,7 +384,7 @@ namespace DS
             iterator next = pos;
             ++next;
             difference_type index = pos - start;
-            if(index < (size() >> 1)) {
+            if(index < static_cast<difference_type>(size() >> 1)) {
                 // if the elements before the current position
                 // is less than the elements after the current position
                 // then move the left part right

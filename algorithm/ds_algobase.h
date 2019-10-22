@@ -200,10 +200,23 @@ namespace DS
         return result - (last - first);
     }
     template<typename BidirectionalIterator1, typename BidirectionalIterator2>
+    BidirectionalIterator2 __copy_backward(BidirectionalIterator1 first, BidirectionalIterator1 last, BidirectionalIterator2 result, input_iterator_tag) {
+        while(last != first) {
+            --last;
+            --result;
+            *result = *last;
+        }
+        return result;
+    }
+    template<typename RandomAccessIterator, typename BidirectionalIterator2>
+    BidirectionalIterator2 __copy_backward(RandomAccessIterator first, RandomAccessIterator last, BidirectionalIterator2 result, random_iterator_tag) {
+        return __copy_backward_d(first, last, result, difference_type(first));
+    }
+    template<typename BidirectionalIterator1, typename BidirectionalIterator2>
     struct __copy_backward_dispatch
     {
         BidirectionalIterator2 operator() (BidirectionalIterator1 first, BidirectionalIterator1 last, BidirectionalIterator2 result) {
-            return __copy_backward(first, last, result, iterator_category(first)());
+            return __copy_backward(first, last, result, iterator_category(first));
         }
     };
     template<typename T>
@@ -236,20 +249,5 @@ namespace DS
         memmove(result - (last - first), first, sizeof(wchar_t) * (last - first));
         return result - (last - first);
     }
-
-    template<typename BidirectionalIterator1, typename BidirectionalIterator2>
-    BidirectionalIterator2 __copy_backward(BidirectionalIterator1 first, BidirectionalIterator1 last, BidirectionalIterator2 result, input_iterator_tag) {
-        while(last != first) {
-            --last;
-            --result;
-            *result = *last;
-        }
-        return result;
-    }
-    template<typename RandomAccessIterator, typename BidirectionalIterator2>
-    BidirectionalIterator2 __copy_backward(RandomAccessIterator first, RandomAccessIterator last, BidirectionalIterator2 result, random_iterator_tag) {
-        return __copy_backward_d(first, last, result, difference_type(first));
-    }
-    
     /* end copy_backward_back */
 }

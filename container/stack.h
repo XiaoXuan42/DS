@@ -30,11 +30,11 @@ namespace DS {
             seq.pop_back();
         }
         
-        bool operator == (const self &x, const self &y) const {
-            return x.seq == y.seq;
+        bool operator == (const self &x) const {
+            return seq == x.seq;
         }
-        bool operator < (const self &x, const self &y) const {
-            return x.seq < y.seq;
+        bool operator < (const self &x) const {
+            return seq < x.seq;
         }
     };
 }
