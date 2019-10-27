@@ -1,7 +1,10 @@
 #pragma once
 
 #include "deque.h"
+#include "vector.h"
+#include "../functor/ds_compare.h"
 
+// queue
 namespace DS {
     template<typename T, typename Sequence = deque<T> >
     class queue
@@ -38,5 +41,37 @@ namespace DS {
         }
         void push(const value_type &x) { seq.push_back(x); }
         void pop() { seq.pop_front(); }
+    };
+}
+
+// priority_queue: default is max-heap
+namespace DS {
+    template<typename T, class Cmp = greater<T> >
+    class priority_queue
+    {
+    public:
+        using value_type = T;
+        using reference = T &;
+        using const_reference = const T&;
+        using pointer = T *;
+        using difference_type = ptrdiff_t;
+        using size_type = size_t;
+    private:
+        vector<T> seq;
+    public:
+        T top() {
+            return *seq.begin();
+        }
+        void push(const T & val) {
+            seq.push_back(val);
+            push_heap(seq.begin(), seq.end(), Cmp());
+        }
+        void pop() {
+            pop_heap(seq.begin(), seq.end(), Cmp());
+            seq.pop_back();
+        }
+        bool empty() {
+            return seq.empty();
+        }
     };
 }
