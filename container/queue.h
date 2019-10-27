@@ -44,7 +44,7 @@ namespace DS {
     };
 }
 
-// priority_queue: default is max-heap
+// priority_queue: default: max-heap
 namespace DS {
     template<typename T, class Cmp = greater<T> >
     class priority_queue
