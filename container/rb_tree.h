@@ -1,9 +1,98 @@
 #pragma once
 
+#include "../iter/iter.h"
+#include "../functor/ds_compare.h"
+#include "../alloc/ds_memory.h"
+
 namespace DS
 {
-    class __rb_node_base
-    {
+    namespace {
+        typedef bool __rb_tree_color;
+        const __rb_tree_color __rb_tree_black = false;
+        const __rb_tree_color __rb_tree_red = true;
 
-    };
+        struct __rb_tree_node_base
+        {
+            typedef __rb_tree_node_base* base_ptr;
+            typedef __rb_tree_color color_type;
+            base_ptr lch, rch;
+            base_ptr parent;
+            color_type color;
+            static base_ptr minimum(base_ptr x) {
+                while(x->lch != nullptr) {
+                    x = x->lch;
+                }
+                return x;
+            }
+            static base_ptr maximum(base_ptr y) {
+                while(y->rch != nullptr) {
+                    y = y->rch;
+                }
+                return y;
+            }
+        };
+        template<typename Value>
+        struct __rb_tree_node : public __rb_tree_node_base
+        {
+            typedef __rb_tree_node<Value> * link_type;
+            Value val;
+        };
+        struct __rb_tree_iterator_base
+        {
+            typedef typename __rb_tree_node_base::base_ptr base_ptr;
+            typedef bidirectional_iterator_tag iterator_category;
+            base_ptr node;
+            
+            void increment() {
+                if(node->rch != nullptr) {
+                    node = node->rch;
+                    while(node->lch != nullptr) {
+                        node = node->lch;
+                    }
+                }
+                else {
+                    base_ptr p = node->parent;
+                    while(node == p->rch) {
+                        node = p;
+                        p = p->parent;
+                    }
+                    if(node->rch != p) {
+                        node = p;
+                    } // if the root is the maximum element, then increment it will make the iterator point to the header
+                }
+            }
+            void decrement() {
+                
+                //if the node point to the header, then set it point to the maximum element
+                if(node->color == __rb_tree_red && node->parent->parent == node) {
+                    node = node->rch;
+                    return;
+                }
+            
+                if(node->lch != nullptr) {
+                    node = node->lch;
+                    while(node->rch != nullptr) {
+                        node = node->rch;
+                    }
+                }
+                else {
+                    base_ptr p = node->parent;
+                    while(node == p->lch) {
+                        node = p;
+                        p = p->parent;
+                    }
+                    node = p;
+                }
+            }
+        };
+
+        template<typename Value, typename Ref, typename Ptr>
+        struct __rb_tree_iteraotr : public __rb_tree_iterator_base
+        {
+            using value_type = Value;
+            using Pointer = Ptr;
+            using Reference = Ref;
+            using Distance = ptrdiff_t;
+        };
+    }
 };
