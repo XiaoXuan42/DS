@@ -5,6 +5,7 @@
 #include "../functor/ds_compare.h"
 #include "../functor/ds_simple_map.h"
 #include "../alloc/ds_memory.h"
+#include <cassert>
 
 namespace DS
 {
@@ -247,6 +248,7 @@ namespace DS
             root() = nullptr;
         }
         link_type __insert(link_type x, link_type y, const value_type &v); // the parent is y, current is x
+        void __remove_rebalance_tree(base_ptr x, base_ptr y);
         link_type __copy(link_type x, link_type p);
         void __insert_rebalance_tree(base_ptr x, base_ptr y);
         void __erase(link_type x);
@@ -258,8 +260,21 @@ namespace DS
         }
         inline void __rb_tree_rotateright(base_ptr x);
         inline void __rb_tree_rotateleft(base_ptr x);
-
+        int check_valid(base_ptr target) {
+            if(target == nullptr) return 1;
+            if(color(target) == __rb_tree_red) {
+                assert(target->lch == nullptr || target->lch->color == __rb_tree_black);
+                assert(target->rch == nullptr || target->rch->color == __rb_tree_black);
+            }
+            int lside = check_valid(target->lch);
+            int rside = check_valid(target->rch);
+            assert(lside == rside);
+            return lside + (target->color == __rb_tree_black ? 1 : 0);
+        }
     public:
+        void check_valid() {
+            check_valid(root());
+        }
         rb_tree(): node_count(0) {
             init();
         }
@@ -294,6 +309,7 @@ namespace DS
         }
         pair<iterator, bool> insert_unique(const value_type &v);
         iterator insert_equal(const value_type &v);
+        void remove(const value_type &v);
     };
 
     // for simplicity I declare some alias
@@ -388,24 +404,29 @@ namespace DS
                 y = parent(x);
             }
             else {
-                color(x) = __rb_tree_black;
-                color(grandpa) = __rb_tree_red;
                 if(x == left(y)) {
-                    __rb_tree_rotateright(y);
-                    // the position of x and y has already been changed
-                    if(x == left(grandpa)) {
+                    if(y == left(grandpa)) {
+                        color(y) = __rb_tree_black;
+                        color(grandpa) = __rb_tree_red;
                         __rb_tree_rotateright(grandpa);
                     }
                     else {
+                        color(x) = __rb_tree_black;
+                        color(grandpa) = __rb_tree_red;
+                        __rb_tree_rotateright(y);
                         __rb_tree_rotateleft(grandpa);
                     }
                 }
                 else {
-                    __rb_tree_rotateleft(y);
-                    if(x == right(grandpa)) {
+                    if(y == right(grandpa)) {
+                        color(y) = __rb_tree_black;
+                        color(grandpa) = __rb_tree_red;
                         __rb_tree_rotateleft(grandpa);
                     }
                     else {
+                        color(x) = __rb_tree_black;
+                        color(grandpa) = __rb_tree_red;
+                        __rb_tree_rotateleft(y);
                         __rb_tree_rotateright(grandpa);
                     }
                 }
@@ -480,6 +501,164 @@ namespace DS
         }
         return pair<iterator, bool>(j, false);
     }
+
+	Type_def_header
+	void Rb_attr(__remove_rebalance_tree) (Rb_type(base_ptr) cur, Rb_type(base_ptr) pa) {
+		base_ptr sib, sr, sl;
+		bool is_left, tmp_col;
+		while(cur != root()) {
+			is_left = left(pa) == cur;
+			sib = is_left ? right(pa) : left(pa);
+			// because the cur side's bd is one less than the sib side, so the sib must exist
+			sl = left(sib);
+			sr = right(sib);
+			if(color(sib) == __rb_tree_red) {
+				color(pa) = __rb_tree_red;
+				color(sib) = __rb_tree_black;
+				if(is_left) {
+					__rb_tree_rotateleft(pa);
+				}
+				else {
+					__rb_tree_rotateright(pa);
+				}
+			}
+			else {
+				if(is_left) {
+					if(sr != nullptr && color(sr) == __rb_tree_red) {
+						tmp_col = color(pa);
+						color(pa) = color(sib);
+						color(sib) = tmp_col;
+						color(sr) = __rb_tree_black;
+						__rb_tree_rotateleft(pa);
+						break;
+					}
+					else if(sl != nullptr && color(sl) == __rb_tree_red) {
+						color(sib) = __rb_tree_red;
+						color(sl) = __rb_tree_black;
+						__rb_tree_rotateright(sib);
+					}
+					else if(color(pa) == __rb_tree_red) {
+						color(pa) = __rb_tree_black;
+						color(sib) = __rb_tree_red;
+						break;
+					}
+					else {
+						color(sib) = __rb_tree_red;
+						cur = pa;
+						pa = parent(pa);
+					}
+				}
+				else {
+					if(sl != nullptr && color(sl) == __rb_tree_red) {
+						tmp_col = color(pa);
+						color(pa) = color(sib);
+						color(sib) = tmp_col;
+						color(sl) = __rb_tree_black;
+						__rb_tree_rotateright(pa);
+						break;
+					}
+					else if(sr != nullptr && color(sr) == __rb_tree_red) {
+						color(sib) = __rb_tree_red;
+						color(sr) = __rb_tree_black;
+						__rb_tree_rotateleft(sib);
+					}
+					else if(color(pa) == __rb_tree_red) {
+						color(pa) = __rb_tree_black;
+						color(sib) = __rb_tree_red;
+						break;
+					}
+					else {
+						color(sib) = __rb_tree_red;
+						cur = pa;
+						pa = parent(pa);
+					}
+				}
+			}
+		}
+	}
+
+	Type_def_header
+	void Rb_attr(remove) (const Rb_type(value_type) &v) {
+		link_type cur = root();
+		link_type tmp, p;
+		bool cmp1, cmp2, is_left;
+		while(cur != nullptr) {
+			cmp1 = cmp(key(cur), get_key(v));
+			cmp2 = cmp(get_key(v), key(cur));
+			if(!cmp1 && !cmp2) {
+				if(right(cur) != nullptr) {
+					tmp = link_type(__rb_tree_node_base::minimum(right(cur)));
+					value(cur) = value(tmp);
+					cur = tmp;
+				}
+				if(color(cur) == __rb_tree_red) {
+					// cur can't be root
+					p = parent(cur);
+					if(cur == left(p)) {
+						left(p) = nullptr;
+					}
+					else {
+						right(p) = nullptr;
+					}
+					del_node(cur);
+					break;	
+				}
+				else if(left(cur) != nullptr || right(cur) != nullptr) {
+					// cur can be root, so we need to judge it
+					is_left = left(cur) != nullptr;
+					if(is_left) {
+						tmp = left(cur);
+					}
+					else {
+						tmp = right(cur);
+					}
+					if(cur == root()) {
+						root() = tmp;
+						parent(tmp) = header;
+						leftmost() = link_type(__rb_tree_node_base::minimum(tmp));
+						rightmost() = link_type(__rb_tree_node_base::maximum(tmp));
+					}
+					else {
+						p = parent(cur);
+						if(cur == left(p)) {
+							left(p) = tmp;
+						}
+						else {
+							right(p) = tmp;
+						}
+						parent(tmp) = p;
+					}
+					del_node(cur);
+					color(tmp) = __rb_tree_black;
+					break;
+				}
+				else {
+					if(cur == root()) {
+						clear();
+						break;
+					}
+					else {
+						p = parent(cur);
+                        if(cur == left(p)) {
+                            left(p) = nullptr;
+                        }
+                        else {
+                            right(p) = nullptr;
+                        }
+						del_node(cur);
+						__remove_rebalance_tree(nullptr, p);
+                        break;
+					}
+				}
+			}
+			else if(cmp2) {
+				cur = left(cur);
+			}
+			else {
+				cur = right(cur);
+			}
+		}
+	}
 
     #undef Rb_alias
     #undef Rb_tree_t
