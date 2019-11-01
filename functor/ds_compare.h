@@ -2,18 +2,28 @@
 
 namespace DS
 {
-    template<typename T>
+    template<typename T, typename B = T>
     class greater
     {
-        bool operator() (const T &first_arg, const T &second_arg) {
+    public:
+        bool operator() (const T &first_arg, const B &second_arg) const {
             return first_arg > second_arg;
         }
     };
-    template<typename T>
+    template<typename T, typename B = T>
     class less
     {
-        bool operator() (const T &first_arg, const T &second_arg) {
+    public:
+        bool operator() (const T &first_arg, const B &second_arg) const {
             return first_arg < second_arg;
+        }
+    };
+    template<typename T, typename B = T>
+    class equal
+    {
+    public:
+        bool operator() (const T &lhs, const B &rhs) const {
+            return lhs == rhs;
         }
     };
 }
