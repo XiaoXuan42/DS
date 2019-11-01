@@ -87,12 +87,40 @@ namespace DS
         };
 
         template<typename Value, typename Ref, typename Ptr>
-        struct __rb_tree_iteraotr : public __rb_tree_iterator_base
+        struct __rb_tree_iterator : public __rb_tree_iterator_base
         {
             using value_type = Value;
-            using Pointer = Ptr;
-            using Reference = Ref;
-            using Distance = ptrdiff_t;
+            using pointer = Ptr;
+            using reference = Ref;
+            using difference_type = ptrdiff_t;
+            using link_type = __rb_tree_node<Value>*;
+
+            using __rb_tree_iterator<Value, Ref, Ptr> = self;
+
+            reference operator * () const {
+                return link_type(node)->val;
+            }
+            pointer operator ->() const {
+                return &(operator *());
+            }
+            self & operator ++() {
+                increment();
+                return *this;
+            }
+            self & operator --() {
+                decrement();
+                return *this;
+            }
+            self operator ++(int) {
+                self tmp = *this;
+                operator++();
+                return tmp;
+            }
+            self operator --(int) {
+                self tmp = *this;
+                operator--();
+                return tmp;
+            }
         };
     }
 };
