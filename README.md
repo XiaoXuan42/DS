@@ -10,6 +10,8 @@ Flag: I will finish this project before this semester ends!!! (haha)
 ## Notice
 c++17 required
 
+I haven't test most of the code yet, if you find any fault among my codes please infrom me, thank you! ^V^
+
 ## Reference book 
 1. 《STL源码剖析》侯捷 华中科技大学出版社
 
