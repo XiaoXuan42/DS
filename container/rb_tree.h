@@ -65,12 +65,12 @@ namespace DS
                     }
                     if(node->rch != p) {
                         node = p;
-                    } // if the root is the maximum element, then increment it will make the iterator point to the header
-                }
+                    }  
+                    // if node points to the maximum element before current call, then now node points to the header
+                    // this also holds when the maximum element is the root
+               }
             }
             void decrement() {
-                
-                //if the node point to the header, then set it point to the maximum element
                 if(node->color == __rb_tree_red && node->parent->parent == node) {
                     node = node->rch;
                     return;
@@ -88,7 +88,11 @@ namespace DS
                         node = p;
                         p = p->parent;
                     }
-                    node = p;
+                    if(node->lch != p) {
+                        node = p;
+                    }
+                    // if the node point to the minimum element before current call, then now node points to the header
+                    // this also holds when the minimum element is the root
                 }
             }
         };
@@ -118,8 +122,6 @@ namespace DS
                 return link_type(node)->val;
             }
             pointer operator ->() const {
-                // this operator is special for smart pointer
-                // it actually return the raw pointer to the value_type
                 return &(operator *());
             }
             self & operator ++() {
@@ -143,7 +145,7 @@ namespace DS
         };
     }
 
-    //the keyofvalue stand for a map from value to its key
+    // the keyofvalue maps a value to it's key
     template<typename Key, typename Value = Key, typename KeyOfValue = identical<Value, Key>,
         typename Compare = less<Key>, typename Alloc = alloc>
     class rb_tree
@@ -172,7 +174,7 @@ namespace DS
         size_type node_count;
         link_type header;
 
-        /* some funciton like alias */
+        /* some funciton aliasment */
         static link_type & left(link_type x) {
             return (link_type &)(x->lch);
         }
@@ -228,9 +230,11 @@ namespace DS
 
         static link_type get_node() {
             // notice: data_alloc::allocate() will not autonomously call the _rb_tree_node's constructor
+            // to allocate memory and call the Value's constructor, use create_node instead
             return data_alloc::allocate();
         }
         static void del_node(link_type tp) {
+            destroy(tp);
             data_alloc::deallocate(tp);
         }
         static link_type create_node(const value_type &x) {
@@ -248,9 +252,9 @@ namespace DS
             root() = nullptr;
         }
         link_type __insert(link_type x, link_type y, const value_type &v); // the parent is y, current is x
+        void __insert_rebalance_tree(base_ptr x, base_ptr y);
         void __remove_rebalance_tree(base_ptr x, base_ptr y);
         link_type __copy(link_type x, link_type p);
-        void __insert_rebalance_tree(base_ptr x, base_ptr y);
         void __erase(link_type x);
         void __clear(link_type x) {
             if(x == nullptr || x == header)    return;
@@ -284,8 +288,8 @@ namespace DS
         ~rb_tree() {
             clear();
             delete header;
-            node_count = 0;
             header = nullptr;
+            node_count = 0;
         }
         void clear() {
             __clear(root());
