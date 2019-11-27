@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../traits/type_traits.h"
+#include "../algorithm/ds_algobase.h"
 
 namespace DS {
     template<typename InputIterator, typename ForwardIterator>

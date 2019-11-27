@@ -18,12 +18,4 @@ namespace DS
             return first_arg < second_arg;
         }
     };
-    template<typename T, typename B = T>
-    class equal
-    {
-    public:
-        bool operator() (const T &lhs, const B &rhs) const {
-            return lhs == rhs;
-        }
-    };
 }

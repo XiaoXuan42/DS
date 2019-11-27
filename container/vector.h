@@ -136,6 +136,7 @@ namespace DS {
         }
         explicit vector(size_type n): start(nullptr), finish(nullptr), end_of_storage(nullptr) {
             fill_initialize(n, T());
+            finish = start;
         }
 
         ~vector() {
