@@ -69,7 +69,6 @@ namespace DS
                 }
             }
             void decrement() {
-                
                 //if the node point to the header, then set it point to the maximum element
                 if(node->color == __rb_tree_red && node->parent->parent == node) {
                     node = node->rch;
@@ -203,7 +202,7 @@ namespace DS
         static reference value(base_ptr x) {
             return (link_type(x))->val;
         }
-        static const Key key(base_ptr x) {
+        static Key key(base_ptr x) {
             return get_key(value(x));
         }
         static color_type & color(base_ptr x) {
@@ -235,6 +234,8 @@ namespace DS
         }
         static link_type create_node(const value_type &x) {
             link_type tmp = get_node();
+            left(tmp) = nullptr;
+            right(tmp) = nullptr;
             construct(&tmp->val, x);
             return tmp;
         }
@@ -260,7 +261,10 @@ namespace DS
         }
         inline void __rb_tree_rotateright(base_ptr x);
         inline void __rb_tree_rotateleft(base_ptr x);
+
         int check_valid(base_ptr target) {
+            // check whether the tree satisfy the constraint condition
+            // used for debug
             if(target == nullptr) return 1;
             if(color(target) == __rb_tree_red) {
                 assert(target->lch == nullptr || target->lch->color == __rb_tree_black);
@@ -278,12 +282,48 @@ namespace DS
         rb_tree(): node_count(0) {
             init();
         }
-        rb_tree(const rb_tree &rhs) {
-            //TODO: finish this
+        rb_tree(const self &rhs) {
+            init();
+            if(rhs.root() == nullptr) return;
+            link_type new_root = create_node(value(rhs.root()));
+            color(new_root) = color(rhs.root());
+            root() = new_root;
+            parent(new_root) = header;
+            __copy(new_root, rhs.root());
+            leftmost() = minimum(root());
+            rightmost() = maximum(root());
+            node_count = rhs.node_count;
+        }
+        rb_tree(const self &&rhs) {
+            header = rhs.header;
+            node_count = rhs.node_count;
+        }
+        self & operator = (const self &rhs) {
+            clear();
+            if(rhs.root() == nullptr) return *this;
+            link_type new_root = get_node();
+            left(new_root) = nullptr;
+            right(new_root) = nullptr;
+            value(new_root) = value(rhs.root());
+            color(new_root) = color(rhs.root());
+            root() = new_root;
+            parent(new_root) = header;
+            __copy(new_root, rhs.root());
+            leftmost() = minimum(root());
+            rightmost() = maximum(root());
+            node_count = rhs.node_count;
+            return *this;
+        }
+        self & operator = (const self &&rhs) {
+            clear();
+            del_node(header);
+            header = rhs.header;
+            node_count = rhs.node_count;
+            return *this;
         }
         ~rb_tree() {
             clear();
-            delete header;
+            del_node(header);
             node_count = 0;
             header = nullptr;
         }
@@ -379,6 +419,7 @@ namespace DS
     }
     Type_def_header
     void Rb_attr(__insert_rebalance_tree) (Rb_type(base_ptr) x, Rb_type(base_ptr) y) {
+        // x points to a red node whose parent is a red node
         base_ptr grandpa;
         base_ptr uncle;
         while(x != header && color(y) == __rb_tree_red) {
@@ -473,6 +514,7 @@ namespace DS
             y = x;
             x = cmp(get_key(v), key(x)) ? left(x) : right(x);
         }
+        node_count++;
         return iterator(__insert(x, y, v));
     }
     Type_def_header
@@ -489,6 +531,7 @@ namespace DS
         //determine whether there is already v in the tree
         if(last_cmp) {
             if(j == begin()) {
+                node_count++;
                 return pair<iterator, bool>(iterator(__insert(x, y, v)), true);
             }
             else {
@@ -497,6 +540,7 @@ namespace DS
             }
         }
         if(cmp(key(j.node), get_key(v))) {
+            node_count++;
             return pair<iterator, bool>(iterator(__insert(x, y, v)), true);
         }
         return pair<iterator, bool>(j, false);
@@ -504,7 +548,10 @@ namespace DS
 
 	Type_def_header
 	void Rb_attr(__remove_rebalance_tree) (Rb_type(base_ptr) cur, Rb_type(base_ptr) pa) {
-		base_ptr sib, sr, sl;
+        // cur points to a sub-tree whose black depth is one less than it's sibling sub-tree
+        // originally cur is nullptr
+        // pa points to the parent of cur
+		base_ptr sib, sr, sl; // sib: sibling, sr: sibling's right child, sl: sibling's left child
 		bool is_left, tmp_col;
 		while(cur != root()) {
 			is_left = left(pa) == cur;
@@ -586,13 +633,17 @@ namespace DS
 			cmp1 = cmp(key(cur), get_key(v));
 			cmp2 = cmp(get_key(v), key(cur));
 			if(!cmp1 && !cmp2) {
+                node_count--;
 				if(right(cur) != nullptr) {
 					tmp = link_type(__rb_tree_node_base::minimum(right(cur)));
 					value(cur) = value(tmp);
 					cur = tmp;
 				}
+                // now cur points to the node to be deleted
+                // there must be a cur's child that's nullptr
 				if(color(cur) == __rb_tree_red) {
 					// cur can't be root
+                    // if cur is a red, then simply delete it
 					p = parent(cur);
 					if(cur == left(p)) {
 						left(p) = nullptr;
@@ -604,6 +655,8 @@ namespace DS
 					break;	
 				}
 				else if(left(cur) != nullptr || right(cur) != nullptr) {
+                    // if cur has a child that's not nullptr, then that's child must be a red node
+                    // so simply make that child a black node then delete cur
 					// cur can be root, so we need to judge it
 					is_left = left(cur) != nullptr;
 					if(is_left) {
@@ -659,6 +712,23 @@ namespace DS
 			}
 		}
 	}
+    Type_def_header
+    Rb_type(link_type) Rb_attr(__copy) (Rb_type(link_type) dst, Rb_type(link_type) src) {
+        // the new created node's child is not set to nullptr because the constructor of link_type finish this
+        if(left(src) != nullptr) {
+            left(dst) = create_node(value(left(src)));
+            color(left(dst)) = color(left(src));
+            parent(left(dst)) = dst;
+            __copy(left(dst), left(src));
+        }
+        if(right(src) != nullptr) {
+            right(dst) = create_node(value(right(src)));
+            color(right(dst)) = color(right(src));
+            parent(right(dst)) = dst;
+            __copy(right(dst), right(src));
+        }
+        return dst;
+    }
 
     #undef Rb_alias
     #undef Rb_tree_t
