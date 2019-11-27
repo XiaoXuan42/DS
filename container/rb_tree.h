@@ -342,21 +342,23 @@ namespace DS
             node_count = 0;
             root() = nullptr;
         }
-        size_type size() {
+        size_type size() const {
             return node_count;
         }
-        bool empty() {
+        bool empty() const {
             return header->parent == nullptr;
         }
-        iterator begin() {
+        iterator begin() const {
             return iterator(leftmost());
         }
-        iterator end() {
+        iterator end() const {
             return iterator(header);
         }
         pair<iterator, bool> insert_unique(const value_type &v);
         iterator insert_equal(const value_type &v);
         void remove(const value_type &v);
+        iterator find(const value_type &v) const;
+        link_type __find(link_type cur, const value_type &v) const;
     };
 
     // for simplicity I declare some alias
@@ -735,6 +737,39 @@ namespace DS
             __copy(right(dst), right(src));
         }
         return dst;
+    }
+
+    Type_def_header
+    Rb_type(link_type) Rb_attr(__find) (Rb_type(link_type) cur, const Rb_type(value_type) &v) const {
+        if(cmp(get_key(v), value(cur))) {
+            if(left(cur) == nullptr) return nullptr;
+            else {
+                return __find(left(cur), v);
+            }
+        }
+        else {
+            if(!cmp(value(cur), get_key(v))) return cur;
+            else {
+                if(right(cur) == nullptr)   return nullptr;
+                else {
+                    return __find(right(cur), v);
+                }
+            }
+        }
+    }
+
+    Type_def_header
+    Rb_type(iterator) Rb_attr(find) (const Rb_type(value_type) &v) const {
+        if(root() == nullptr) {
+            return end();
+        }
+        else {
+            link_type target = __find(root(), v);
+            if(target == nullptr) {
+                return end();
+            }
+            return iterator(target);
+        }
     }
 
     #undef Rb_alias
