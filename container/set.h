@@ -44,5 +44,11 @@ namespace DS
         void remove(const value_type &v) {
             rbt.remove(v);
         } 
+        iterator lower_bound(const value_type &v) {
+            return rbt.lower_bound(v);
+        }
+        iterator upper_bound(const value_type &v) {
+            return rbt.upper_bound(v);
+        }
     };
 }

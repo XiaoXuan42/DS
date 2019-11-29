@@ -268,6 +268,8 @@ namespace DS
         inline void __rb_tree_rotateright(base_ptr x);
         inline void __rb_tree_rotateleft(base_ptr x);
 
+        link_type __find(link_type cur, const value_type &v) const;
+
         int check_valid(base_ptr target) {
             // check whether the tree satisfy the constraint condition
             // used for debug
@@ -281,6 +283,8 @@ namespace DS
             assert(lside == rside);
             return lside + (target->color == __rb_tree_black ? 1 : 0);
         }
+        link_type __lower_bound(link_type &rt, const value_type &v) const;
+        link_type __upper_bound(link_type &rt, const value_type &v) const;
     public:
         void check_valid() {
             check_valid(root());
@@ -358,7 +362,8 @@ namespace DS
         iterator insert_equal(const value_type &v);
         void remove(const value_type &v);
         iterator find(const value_type &v) const;
-        link_type __find(link_type cur, const value_type &v) const;
+        iterator lower_bound(const value_type &v) const;
+        iterator upper_bound(const value_type &v) const;
     };
 
     // for simplicity I declare some alias
@@ -769,6 +774,77 @@ namespace DS
                 return end();
             }
             return iterator(target);
+        }
+    }
+    Type_def_header
+    Rb_type(link_type) Rb_attr(__lower_bound) (link_type &rt, const Rb_type(value_type) &v) const {
+        link_type cur = rt;
+        link_type pos_ans = nullptr;
+        while(cur != nullptr) {
+            if(cmp(v, value(cur))) {
+                pos_ans = cur;
+                cur = left(cur);
+            }
+            else if(cmp(value(cur), v)) {
+                cur = right(cur);                
+            }
+            else {
+                if(left(cur) != nullptr) {
+                    link_type l_tree = __lower_bound(left(cur), v);
+                    if(l_tree != nullptr && value(l_tree) == v) {
+                        return l_tree;
+                    }
+                    return cur;
+                }
+                else {
+                    return cur;
+                }
+            }
+        }
+        return pos_ans;      // if none is greater than v, because pos_ans's initial value is header, so this will return end()
+    }
+    Type_def_header
+    Rb_type(link_type) Rb_attr(__upper_bound) (link_type &rt, const Rb_type(value_type) &v) const {
+        link_type cur = rt;
+        while(cur != nullptr) {
+            if(cmp(v, value(cur))) {
+                if(left(cur) != nullptr) {
+                    link_type l_tree = __upper_bound(left(cur), v);
+                    if(l_tree != nullptr) {
+                        return l_tree;
+                    }
+                    else {
+                        return cur;
+                    }
+                }
+                else {
+                    return cur;
+                }
+            }
+            else {
+                cur = right(cur);
+            }
+        }
+        return nullptr;       // if none is greater than v, because pos_ans's initial value is header, so this will return end() 
+    } 
+    Type_def_header
+    Rb_type(iterator) Rb_attr(lower_bound) (const value_type &v) const {
+        link_type res = __lower_bound(root(), v);
+        if(res == nullptr) {
+            return end();
+        }
+        else {
+            return iterator(res);
+        }
+    }
+    Type_def_header
+    Rb_type(iterator) Rb_attr(upper_bound) (const value_type &v) const {
+        link_type res = __upper_bound(root(), v);
+        if(res == nullptr) {
+            return end();
+        }
+        else {
+            return iterator(res);
         }
     }
 
