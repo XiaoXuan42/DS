@@ -19,7 +19,7 @@ namespace DS
         using iterator = __rb_tree_iterator<Value, Value&, Value*>;
         using key_type = Key;
         using size_type = size_t;
-        using iterator = __rb_tree_iterator<Value, Value&, Value*>;
+        using iterator = typename rb_tree<Key, Value, KeyOfValue, Comp, Alloc>::iterator;
     private:
         rb_tree<Key, Value, KeyOfValue, Comp, Alloc> rbt;
     public:
@@ -37,6 +37,18 @@ namespace DS
         }
         bool empty() const {
             return rbt.empty();
+        }
+        iterator lower_bound(const key_type &k) const {
+            return rbt.lower_bound(k);
+        }
+        iterator upper_bound(const key_type &k) const {
+            return rbt.upper_bound(k);
+        }
+        iterator find(const key_type &k) const {
+            return rbt.find(k);
+        }
+        void remove(const key_type &k) const {
+            rbt.remove(k);
         }
     };
 }
