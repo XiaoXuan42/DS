@@ -1,24 +1,27 @@
 #pragma once
 
-#include "rb_tree.h"
 #include "../functor/ds_simple_map.h"
+#include "../functor/ds_compare.h"
+#include "../alloc/ds_memory.h"
+#include "../container/rb_tree.h"
 
 namespace DS
 {
-    template<typename Value, typename Alloc = alloc>
-    class set
+    template<typename Key, typename Value, typename KeyOfValue, typename Comp, typename Alloc = alloc>
+    class map
     {
     public:
         using value_type = Value;
         using reference = value_type&;
-        using const_reference = const value_type &;
         using const_pointer = const value_type *;
+        using const_reference = const value_type &;
         using difference_type = ptrdiff_t;
+        using iterator = __rb_tree_iterator<Value, Value&, Value*>;
+        using key_type = Key;
         using size_type = size_t;
         using iterator = __rb_tree_iterator<Value, Value&, Value*>;
-
     private:
-        rb_tree<Value, Value, identical<Value, Value>, less<Value>, alloc> rbt;
+        rb_tree<Key, Value, KeyOfValue, Comp, Alloc> rbt;
     public:
         iterator begin() const {
             return rbt.begin();
@@ -34,21 +37,6 @@ namespace DS
         }
         bool empty() const {
             return rbt.empty();
-        }
-        iterator find(const value_type &v) const {
-            return rbt.find(v);
-        }
-        iterator insert(const value_type &v) {
-            return rbt.insert_unique(v).first();
-        }
-        void remove(const value_type &v) {
-            rbt.remove(v);
-        } 
-        iterator lower_bound(const value_type &v) {
-            return rbt.lower_bound(v);
-        }
-        iterator upper_bound(const value_type &v) {
-            return rbt.upper_bound(v);
         }
     };
 }
