@@ -50,5 +50,14 @@ namespace DS
         void remove(const key_type &k) const {
             rbt.remove(k);
         }
+        value_type & operator [] (const key_type &k) const {
+            iterator it = find(k);
+            if(it == end()) {
+                throw DSReadError();
+            }
+            else {
+                return *it;
+            }
+        }
     };
 }
