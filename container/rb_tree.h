@@ -254,7 +254,7 @@ namespace DS
 
             root() = nullptr;
         }
-        link_type __insert(link_type x, link_type y, const value_type &v); // the parent is y, current is x
+        link_type __insert(link_type x, link_type y, const key_type &v); // the parent is y, current is x
         void __insert_rebalance_tree(base_ptr x, base_ptr y);
         void __remove_rebalance_tree(base_ptr x, base_ptr y);
         link_type __copy(link_type x, link_type p);
@@ -268,7 +268,7 @@ namespace DS
         inline void __rb_tree_rotateright(base_ptr x);
         inline void __rb_tree_rotateleft(base_ptr x);
 
-        link_type __find(link_type cur, const value_type &v) const;
+        link_type __find(link_type cur, const key_type &v) const;
 
         int check_valid(base_ptr target) {
             // check whether the tree satisfy the constraint condition
@@ -283,8 +283,8 @@ namespace DS
             assert(lside == rside);
             return lside + (target->color == __rb_tree_black ? 1 : 0);
         }
-        link_type __lower_bound(link_type &rt, const value_type &v) const;
-        link_type __upper_bound(link_type &rt, const value_type &v) const;
+        link_type __lower_bound(link_type &rt, const key_type &v) const;
+        link_type __upper_bound(link_type &rt, const key_type &v) const;
     public:
         void check_valid() {
             check_valid(root());
@@ -358,12 +358,12 @@ namespace DS
         iterator end() const {
             return iterator(header);
         }
-        pair<iterator, bool> insert_unique(const value_type &v);
-        iterator insert_equal(const value_type &v);
-        void remove(const value_type &v);
-        iterator find(const value_type &v) const;
-        iterator lower_bound(const value_type &v) const;
-        iterator upper_bound(const value_type &v) const;
+        pair<iterator, bool> insert_unique(const key_type &v);
+        iterator insert_equal(const key_type &v);
+        void remove(const key_type &v);
+        iterator find(const key_type &v) const;
+        iterator lower_bound(const key_type &v) const;
+        iterator upper_bound(const key_type &v) const;
     };
 
     // for simplicity I declare some alias
@@ -492,7 +492,7 @@ namespace DS
     }
 
     Type_def_header
-    Rb_type(link_type) Rb_attr(__insert) (Rb_type(link_type) x, Rb_type(link_type) y, const Rb_type(value_type) &v) {
+    Rb_type(link_type) Rb_attr(__insert) (Rb_type(link_type) x, Rb_type(link_type) y, const Rb_type(key_type) &v) {
         link_type z;
         z = create_node(v);
         color(z) = __rb_tree_red;
@@ -521,7 +521,7 @@ namespace DS
     }
 
     Type_def_header
-    Rb_type(iterator) Rb_attr(insert_equal) (const Rb_type(value_type) &v) {
+    Rb_type(iterator) Rb_attr(insert_equal) (const Rb_type(key_type) &v) {
         link_type y = header;
         link_type x = root();
         while(x != nullptr) {
@@ -532,7 +532,7 @@ namespace DS
         return iterator(__insert(x, y, v));
     }
     Type_def_header
-    pair<Rb_type(iterator), bool> Rb_attr(insert_unique) (const Rb_type(value_type) &v) {
+    pair<Rb_type(iterator), bool> Rb_attr(insert_unique) (const Rb_type(key_type) &v) {
         link_type y = header;
         link_type x = root();
         bool last_cmp = false;
@@ -639,7 +639,7 @@ namespace DS
 	}
 
 	Type_def_header
-	void Rb_attr(remove) (const Rb_type(value_type) &v) {
+	void Rb_attr(remove) (const Rb_type(key_type) &v) {
 		link_type cur = root();
 		link_type tmp, p;
 		bool cmp1, cmp2, is_left;
@@ -745,7 +745,7 @@ namespace DS
     }
 
     Type_def_header
-    Rb_type(link_type) Rb_attr(__find) (Rb_type(link_type) cur, const Rb_type(value_type) &v) const {
+    Rb_type(link_type) Rb_attr(__find) (Rb_type(link_type) cur, const Rb_type(key_type) &v) const {
         if(cmp(get_key(v), value(cur))) {
             if(left(cur) == nullptr) return nullptr;
             else {
@@ -764,7 +764,7 @@ namespace DS
     }
 
     Type_def_header
-    Rb_type(iterator) Rb_attr(find) (const Rb_type(value_type) &v) const {
+    Rb_type(iterator) Rb_attr(find) (const Rb_type(key_type) &v) const {
         if(root() == nullptr) {
             return end();
         }
@@ -777,7 +777,7 @@ namespace DS
         }
     }
     Type_def_header
-    Rb_type(link_type) Rb_attr(__lower_bound) (link_type &rt, const Rb_type(value_type) &v) const {
+    Rb_type(link_type) Rb_attr(__lower_bound) (link_type &rt, const Rb_type(key_type) &v) const {
         link_type cur = rt;
         link_type pos_ans = nullptr;
         while(cur != nullptr) {
@@ -804,7 +804,7 @@ namespace DS
         return pos_ans;      // if none is greater than v, because pos_ans's initial value is header, so this will return end()
     }
     Type_def_header
-    Rb_type(link_type) Rb_attr(__upper_bound) (link_type &rt, const Rb_type(value_type) &v) const {
+    Rb_type(link_type) Rb_attr(__upper_bound) (link_type &rt, const Rb_type(key_type) &v) const {
         link_type cur = rt;
         while(cur != nullptr) {
             if(cmp(v, value(cur))) {
@@ -828,7 +828,7 @@ namespace DS
         return nullptr;       // if none is greater than v, because pos_ans's initial value is header, so this will return end() 
     } 
     Type_def_header
-    Rb_type(iterator) Rb_attr(lower_bound) (const value_type &v) const {
+    Rb_type(iterator) Rb_attr(lower_bound) (const key_type &v) const {
         link_type res = __lower_bound(root(), v);
         if(res == nullptr) {
             return end();
@@ -838,7 +838,7 @@ namespace DS
         }
     }
     Type_def_header
-    Rb_type(iterator) Rb_attr(upper_bound) (const value_type &v) const {
+    Rb_type(iterator) Rb_attr(upper_bound) (const key_type &v) const {
         link_type res = __upper_bound(root(), v);
         if(res == nullptr) {
             return end();
