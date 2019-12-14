@@ -7,7 +7,7 @@
 
 namespace DS
 {
-    template<typename Key, typename Value, typename KeyOfValue, typename Comp, typename Alloc = alloc>
+    template<typename Key, typename Value, typename KeyOfValue, typename Comp = less<Key>, typename Alloc = alloc>
     class map
     {
     public:
