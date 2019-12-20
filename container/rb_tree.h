@@ -2,8 +2,7 @@
 
 #include "./pair.h"
 #include "../iter/iter.h"
-#include "../functor/ds_compare.h"
-#include "../functor/ds_simple_map.h"
+#include "../functor/ds_function.h"
 #include "../alloc/ds_memory.h"
 #include <cassert>
 
@@ -147,7 +146,7 @@ namespace DS
     }
 
     // the keyofvalue maps a value to it's key
-    template<typename Key, typename Value = Key, typename KeyOfValue = identical<Value, Key>,
+    template<typename Key, typename Value, typename KeyOfValue,
         typename Compare = less<Key>, typename Alloc = alloc>
     class rb_tree
     {
@@ -254,7 +253,7 @@ namespace DS
 
             root() = nullptr;
         }
-        link_type __insert(link_type x, link_type y, const key_type &v); // the parent is y, current is x
+        link_type __insert(link_type x, link_type y, const value_type &v); // the parent is y, current is x
         void __insert_rebalance_tree(base_ptr x, base_ptr y);
         void __remove_rebalance_tree(base_ptr x, base_ptr y);
         link_type __copy(link_type x, link_type p);
@@ -358,8 +357,8 @@ namespace DS
         iterator end() const {
             return iterator(header);
         }
-        pair<iterator, bool> insert_unique(const key_type &v);
-        iterator insert_equal(const key_type &v);
+        pair<iterator, bool> insert_unique(const value_type &v);
+        iterator insert_equal(const value_type &v);
         void remove(const key_type &v);
         iterator find(const key_type &v) const;
         iterator lower_bound(const key_type &v) const;
@@ -492,7 +491,7 @@ namespace DS
     }
 
     Type_def_header
-    Rb_type(link_type) Rb_attr(__insert) (Rb_type(link_type) x, Rb_type(link_type) y, const Rb_type(key_type) &v) {
+    Rb_type(link_type) Rb_attr(__insert) (Rb_type(link_type) x, Rb_type(link_type) y, const Rb_type(value_type) &v) {
         link_type z;
         z = create_node(v);
         color(z) = __rb_tree_red;
@@ -502,6 +501,8 @@ namespace DS
             if(y == header) {
                 rightmost() = z;
                 root() = z;
+                // color(z) = __rb_tree_black;
+                // if z is the root, the color will be set to black latter in the __insert_rebalance_tree
             }
             else if(y == leftmost()) {
                 leftmost() = z;
@@ -521,7 +522,7 @@ namespace DS
     }
 
     Type_def_header
-    Rb_type(iterator) Rb_attr(insert_equal) (const Rb_type(key_type) &v) {
+    Rb_type(iterator) Rb_attr(insert_equal) (const Rb_type(value_type) &v) {
         link_type y = header;
         link_type x = root();
         while(x != nullptr) {
@@ -532,10 +533,14 @@ namespace DS
         return iterator(__insert(x, y, v));
     }
     Type_def_header
-    pair<Rb_type(iterator), bool> Rb_attr(insert_unique) (const Rb_type(key_type) &v) {
+    pair<Rb_type(iterator), bool> Rb_attr(insert_unique) (const Rb_type(value_type) &v) {
         link_type y = header;
         link_type x = root();
         bool last_cmp = false;
+        if(x == nullptr) {
+            // root() == nullptr
+            return pair<iterator, bool>(iterator(__insert(x, y, v)), true);
+        }
         while(x != nullptr) {
             y = x;
             last_cmp = cmp(get_key(v), key(x));
@@ -746,14 +751,14 @@ namespace DS
 
     Type_def_header
     Rb_type(link_type) Rb_attr(__find) (Rb_type(link_type) cur, const Rb_type(key_type) &v) const {
-        if(cmp(get_key(v), value(cur))) {
+        if(cmp(v, key(cur))) {
             if(left(cur) == nullptr) return nullptr;
             else {
                 return __find(left(cur), v);
             }
         }
         else {
-            if(!cmp(value(cur), get_key(v))) return cur;
+            if(!cmp(key(cur), v)) return cur;
             else {
                 if(right(cur) == nullptr)   return nullptr;
                 else {
@@ -761,6 +766,7 @@ namespace DS
                 }
             }
         }
+        return nullptr;
     }
 
     Type_def_header
@@ -781,17 +787,17 @@ namespace DS
         link_type cur = rt;
         link_type pos_ans = nullptr;
         while(cur != nullptr) {
-            if(cmp(v, value(cur))) {
+            if(cmp(v, key(cur))) {
                 pos_ans = cur;
                 cur = left(cur);
             }
-            else if(cmp(value(cur), v)) {
+            else if(cmp(key(cur), v)) {
                 cur = right(cur);                
             }
             else {
                 if(left(cur) != nullptr) {
                     link_type l_tree = __lower_bound(left(cur), v);
-                    if(l_tree != nullptr && value(l_tree) == v) {
+                    if(l_tree != nullptr && key(l_tree) == v) {
                         return l_tree;
                     }
                     return cur;
@@ -807,7 +813,7 @@ namespace DS
     Rb_type(link_type) Rb_attr(__upper_bound) (link_type &rt, const Rb_type(key_type) &v) const {
         link_type cur = rt;
         while(cur != nullptr) {
-            if(cmp(v, value(cur))) {
+            if(cmp(v, key(cur))) {
                 if(left(cur) != nullptr) {
                     link_type l_tree = __upper_bound(left(cur), v);
                     if(l_tree != nullptr) {

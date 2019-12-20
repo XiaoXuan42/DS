@@ -2,7 +2,7 @@
 
 #include "deque.h"
 #include "vector.h"
-#include "../functor/ds_compare.h"
+#include "../functor/ds_function.h"
 
 // queue
 namespace DS {

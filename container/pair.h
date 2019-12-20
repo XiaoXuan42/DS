@@ -32,5 +32,11 @@ namespace DS
         B & second() {
             return sd;
         }
+        const A& first() const {
+            return ft;
+        }
+        const B& second() const {
+            return sd;
+        }
     };
 }

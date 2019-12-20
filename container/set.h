@@ -1,7 +1,7 @@
 #pragma once
 
 #include "rb_tree.h"
-#include "../functor/ds_simple_map.h"
+#include "../functor/ds_function.h"
 
 namespace DS
 {
@@ -18,7 +18,7 @@ namespace DS
         using iterator = __rb_tree_iterator<Value, Value&, Value*>;
 
     private:
-        rb_tree<Value, Value, identical<Value, Value>, less<Value>, alloc> rbt;
+        rb_tree<Value, Value, identity<Value>, less<Value>, alloc> rbt;
     public:
         iterator begin() const {
             return rbt.begin();

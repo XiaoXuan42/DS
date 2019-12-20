@@ -8,7 +8,7 @@ default heap: max-heap
 */
 #include "../traits/type_traits.h"
 #include "../iter/iter.h"
-#include "../functor/ds_compare.h"
+#include "../functor/ds_function.h"
 #include "ds_algobase.h"
 
 namespace DS

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../container/pair.h"
 namespace DS
 {
     template<typename Arg, typename Result>
@@ -18,43 +19,108 @@ namespace DS
     template<typename T>
     struct plus: public binary_function<T, T, T>
     {
-        constexpr T operator(const T &x, const T &y) const {
+        constexpr T operator()(const T &x, const T &y) const {
             return x + y;
         }
     };
     template<typename T>
     struct minus : public binary_function<T, T, T>
     {
-        constexpr T operator(const T &x, const T &y) const {
+        constexpr T operator()(const T &x, const T &y) const {
             return x - y;
         }
     };
     template<typename T>
     struct multiplies : public binary_function<T, T, T>
     {
-        constexpr T operator(const T &x, const T &y) const {
+        constexpr T operator()(const T &x, const T &y) const {
             return x * y;
         }
     };
     template<typename T>
     struct divides : public binary_function<T, T, T>
     {
-        constexpr T operator(const T &x, const T &y) const {
+        constexpr T operator()(const T &x, const T &y) const {
             return x / y;
         }
     };
     template<typename T>
     struct modules : public binary_function<T, T, T>
     {
-        constexpr T operator(const T &x, const T &y) const {
+        constexpr T operator()(const T &x, const T &y) const {
             return x % y;
         }
     };
     template<typename T>
     struct negate : public unary_function<T, T>
     {
-        constexpr T operator(const T &x) const {
+        constexpr T operator()(const T &x) const {
             return -x;
+        }
+    };
+    template<typename Seq, typename T>
+    struct select1 : public unary_function<Seq, T>
+    {
+        constexpr T& operator()(Seq &x) const {
+            return x[0];
+        }
+        constexpr const T& operator()(const Seq &x) const {
+            return x[0];
+        }
+    };
+    template<typename T1, typename T2>
+    struct select1<pair<T1, T2>, T1> : public unary_function<pair<T1, T2>, T1>
+    {
+        constexpr T1&  operator()(pair<T1, T2> &x) const {
+            return x.first();
+        }
+        constexpr const T1& operator()(const pair<T1, T2> &x) const {
+            return x.first();
+        }
+    };
+    template<typename Seq, typename T>
+    struct select2 : public unary_function<Seq, T>
+    {
+        constexpr T & operator()(Seq &x) const {
+            return x[1];
+        }
+        constexpr const T & operator()(const Seq &x) const {
+            return x[1];
+        }
+    };
+    template<typename T1, typename T2>
+    struct select2<pair<T1, T2>, T2> : public unary_function<pair<T1, T2>, T2>
+    {
+        constexpr T2 & operator()(pair<T1, T2> &x) const {
+            return x.second();
+        }
+        constexpr const T2 operator()(const pair<T1, T2> &x) const {
+            return x.second();
+        }
+    };
+    template<typename T>
+    struct identity : public unary_function<T, T>
+    {
+        constexpr T& operator() (T &x) const {
+            return x;
+        }
+        constexpr const T& operator() (const T &x) const {
+            return x;
+        }
+    };
+
+    template<typename T1, typename T2 = T1>
+    struct greater : public binary_function<T1, T2, bool>
+    {
+        constexpr bool operator() (const T1 &x, const T2 &y) const {
+            return x > y;
+        }
+    };
+    template<typename T1, typename T2 = T1>
+    struct less
+    {
+        constexpr bool operator() (const T1 &x, const T2 &y) const {
+            return x < y;
         }
     };
 }
