@@ -73,48 +73,6 @@ namespace DS {
                 *position = x;
             }
         }
-        void insert(iterator position, size_type n, const_reference x) {
-            //allocate n elements that's equal to x
-            if(n != 0) {
-                if(size_type(end_of_storage - finish) >= n) {
-                    const size_type elem_remain = finish - position;
-                    iterator old_finish = finish;
-                    if(elem_remain > n) {
-                        uninitialized_copy(finish - n, finish, finish);
-                        finish = finish + n;
-                        copy_backward(position, position + n, old_finish);
-                        fill(position, position + n, x);
-                    }
-                    else {
-                        uninitialized_copy(position, finish, finish + n - elem_remain);
-                        finish = finish + n;
-                        fill(position, old_finish + n - elem_remain, x);
-                    }
-                }
-                else {
-                    const size_type old_size = capacity();
-                    const size_type len = old_size + max(old_size, n);
-
-                    iterator new_start = data_alloc::allocate(len);
-                    iterator new_finish = new_start;
-                    try {
-                        new_finish = uninitialized_copy(start, position, new_start);
-                        new_finish = uninitialized_fill_n(new_finish, n, x);
-                        new_finish = uninitialized_copy(position, finish, new_finish);
-                    }
-                    catch(...) {
-                        destroy(new_start, new_finish);
-                        data_alloc::deallocate(new_start, n);
-                        throw;
-                    }
-                    destroy(start, finish);
-                    deallocate();
-                    start = new_start;
-                    finish = new_finish;
-                    end_of_storage = new_start + len;
-                }
-            }
-        }
         void fill_initialize(size_type n, const_reference value) {
             start = allocate_and_fill(n, value);
             finish = start + n;
@@ -210,6 +168,48 @@ namespace DS {
             destroy(finish);
             return position;
         }
+        void insert(iterator position, size_type n, const_reference x) {
+            //allocate n elements that's equal to x
+            if(n != 0) {
+                if(size_type(end_of_storage - finish) >= n) {
+                    const size_type elem_remain = finish - position;
+                    iterator old_finish = finish;
+                    if(elem_remain > n) {
+                        uninitialized_copy(finish - n, finish, finish);
+                        finish = finish + n;
+                        copy_backward(position, position + n, old_finish);
+                        fill(position, position + n, x);
+                    }
+                    else {
+                        uninitialized_copy(position, finish, finish + n - elem_remain);
+                        finish = finish + n;
+                        fill(position, old_finish + n - elem_remain, x);
+                    }
+                }
+                else {
+                    const size_type old_size = capacity();
+                    const size_type len = old_size + max(old_size, n);
+
+                    iterator new_start = data_alloc::allocate(len);
+                    iterator new_finish = new_start;
+                    try {
+                        new_finish = uninitialized_copy(start, position, new_start);
+                        new_finish = uninitialized_fill_n(new_finish, n, x);
+                        new_finish = uninitialized_copy(position, finish, new_finish);
+                    }
+                    catch(...) {
+                        destroy(new_start, new_finish);
+                        data_alloc::deallocate(new_start, n);
+                        throw;
+                    }
+                    destroy(start, finish);
+                    deallocate();
+                    start = new_start;
+                    finish = new_finish;
+                    end_of_storage = new_start + len;
+                }
+            }
+        }
         void resize(size_type new_size, const T &x) {
             if(new_size < size()) {
                 erase(begin() + new_size, end());
@@ -226,6 +226,23 @@ namespace DS {
         }
         reference operator [] (size_type n) {
             return *(begin() + n);
+        }
+        void reserve(const size_type n) {
+            if(n <= capacity()) return;
+            else {
+                iterator new_start = data_alloc::allocate(n);
+                iterator new_finish = uninitialized_copy(start, finish, new_start);
+                destroy(start, finish);
+                deallocate();
+                start = new_start;
+                finish = new_finish;
+                end_of_storage = start + n;
+            }
+        }
+        void swap(vector &rhs) {
+            DS::swap(start, rhs.start);            
+            DS::swap(finish, rhs.finish);
+            DS::swap(end_of_storage, rhs.end_of_storage);
         }
     };
 }

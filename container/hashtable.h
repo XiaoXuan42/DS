@@ -72,6 +72,7 @@ namespace DS
                 pnext = *htb.bucket[index];
             }
             p = pnext;
+            return *this;
         }
         iterator operator++ (int) {
             iterator tmp = *this;
@@ -111,14 +112,20 @@ namespace DS
         link_node allocate_node() {
             return node_alloc::allocate();
         }
+        link_node allocate_node(const value_type &obj) {
+            link_node n = node_alloc::allocate();
+            construct(&(n->val), obj);
+            return n;
+        }
         void deallocate_node(link_node p) {
+            destroy(&(p->val));
             node_alloc::deallocate(p);
         }
 
     private:
         HashFn hash;
         ExtractKey get_key;
-        EqualKey equal;
+        EqualKey equals;
 
         vector<link_node, Alloc> bucket;        
         size_type num_content;
@@ -128,17 +135,74 @@ namespace DS
         pair<link_node, bool> __insert_unique(const value_type &v);
         link_node __insert_equal(const value_type &v);
 
+        void initialize_buckets(size_type n) {
+            const size_type n_buckets = hash_lower_bound_prime(n);
+            bucket.reserve(n_buckets);
+            bucket.insert(bucket.end(), n_buckets, nullptr);
+            num_content = 0;
+        }
+        void deallocate() {
+            bucket.~vector();    
+        }
+        void copy_from(const hashtable &other) {
+            clear();
+            size_type htb_size = other.buck_size();
+            bucket.reserve(htb_size);
+            bucket.insert(bucket.begin(), htb_size, nullptr);
+            num_content = other.num_content;
+            for(size_type index = 0; index < htb_size; index++) {
+                link_node cur = other.bucket[index];
+                link_node rear;
+                if(cur != nullptr) {
+                    link_node new_node = allocate_node(cur->val);
+                    new_node->next = nullptr;
+                    rear = new_node;
+                    bucket[index] = new_node;
+                    cur = cur->next;
+                    while(cur != nullptr) {
+                        new_node = allocate_node(cur->val);
+                        new_node->next = nullptr;
+                        rear->next = new_node;
+                        rear = new_node;
+                        cur = cur->next;
+                    }
+                }
+            }
+        }
+
     public:
         friend class __hashtable_iterator<Value, Key, HashFn, ExtractKey, EqualKey, Alloc>;
 
-        hashtable(): bucket(), num_content(0) {}
-        hashtable(const hashtable &other) = default;
-        hashtable(hashtable &&other) = default;
-        ~hashtable() = default;
-        hashtable & operator = (const hashtable &other) = default;
-        hashtable & operator = (hashtable &&other) = default;
+        hashtable(size_type n, const HashFn &fn, const EqualKey& eql): hash(fn), get_key(ExtractKey()), equals(eql), num_content(0) {
+            initialize_buckets(n);
+        }
+        hashtable(size_type n): hash(HashFn()), get_key(ExtractKey()), equals(EqualKey()), num_content(0) {
+            initialize_buckets(n);
+        }
+        hashtable(): hash(HashFn()), get_key(ExtractKey()), equals(EqualKey()), num_content(0) {
+            initialize_buckets(0);
+        }
+        hashtable(const hashtable &other) {
+            copy_from(other);
+        }
+        hashtable(hashtable &&other) {
+            bucket.swap(other.bucket);
+            num_content = other.num_content;
+        }
+        ~hashtable() {
+            clear();
+            deallocate();
+        }
+        hashtable & operator = (const hashtable &other) {
+            copy_from(other);
+            return *this;
+        }
+        hashtable & operator = (hashtable &&other) {
+            bucket.swap(other.bucket);
+            num_content = other.num_content;
+        }
         
-        size_type buck_size() {
+        size_type buck_size() const {
             return bucket.size();
         }
 
@@ -155,7 +219,22 @@ namespace DS
             return bk_num_key(get_key(v));
         }
 
-        iterator begin() {
+        void clear() {
+            num_content = 0;
+            size_type index = 0;
+            size_type htb_size = buck_size();
+            while(index < htb_size) {
+                link_node cur = bucket[index];
+                while(cur != nullptr) {
+                    bucket[index] = cur->next;
+                    destroy(&(cur->val));
+                    node_alloc::deallocate(cur);
+                    cur = bucket[index];
+                }
+            }
+        }
+
+        iterator begin() const {
             size_type index = 0;
             size_type htb_size = buck_size();
             iterator result;
@@ -169,7 +248,7 @@ namespace DS
             }
             return result;
         }
-        iterator end() {
+        iterator end() const {
             iterator result;
             result.htb = this;
             result.p = nullptr;
@@ -211,25 +290,25 @@ namespace DS
                 cur = cur_next;
             }
         }
-        swap(new_buck, bucket);
+        bucket.swap(new_buck);
     }
 
     HASHTB_TYPE
     pair<typename HASHTB_ATTR(link_node), bool> HASHTB_ATTR(__insert_unique) (const HASHTB_ATTR(value_type) &v) {
+        size_type index = bk_num_val(v);
+        link_node cur = bucket[index];
+        while(cur != nullptr) {
+            if(equals(get_key(cur->val), get_key(v))) {
+                return pair<link_node, bool>(cur, false);
+            }
+        }
+
         num_content++;
         if(num_content > buck_size()) {
             rehash(num_content);
         }
-        size_type index = bk_num_val(v);
-        link_node cur = bucket[index];
-        while(cur != nullptr) {
-            if(cur->val == v) {
-                return pair<link_node, bool>(cur, false);
-            }
-        }
-        link_node new_node = allocate_node();
+        link_node new_node = allocate_node(v);
         new_node->next = bucket[index];
-        new_node->val = v;
         bucket[index] = new_node;
         return pair<link_node, bool>(new_node, true);
     }
@@ -241,9 +320,8 @@ namespace DS
             rehash(num_content);
         }
         size_type index = bk_num_val(v);
-        link_node new_node = allocate_node();
+        link_node new_node = allocate_node(v);
         new_node->next = bucket[index];
-        new_node->val = v;
         bucket[index] = new_node;
         return new_node;
     }
