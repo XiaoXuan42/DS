@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../functor/ds_simple_map.h"
 #include "../alloc/ds_memory.h"
 #include "rb_tree.h"
 #include "pair.h"
