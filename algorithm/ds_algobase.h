@@ -6,24 +6,24 @@
 
 namespace DS
 {
-    // template<typename InputIterator1, typename InputIterator2>
-    // inline bool equal(InputIterator1 first1, InputIterator1 second1, InputIterator2 first2) {
-    //     for( ; first1 != second1; ++first1, ++first2) {
-    //         if(*first1 != *first2) {
-    //             return false;
-    //         }
-    //     }
-    //     return true;
-    // }
-    // template<typename InputIterator1, typename InputIterator2, typename BinaryOperation>
-    // inline bool equal(InputIterator1 first1, InputIterator1 second1, InputIterator2 first2, BinaryOperation op) {
-    //     for( ; first1 != second1; ++first1, ++first2) {
-    //         if(!op(*first1, *first2)) {
-    //             return false;
-    //         }
-    //     }
-    //     return true;
-    // }
+    template<typename InputIterator1, typename InputIterator2>
+    inline bool equal(InputIterator1 first1, InputIterator1 second1, InputIterator2 first2) {
+        for( ; first1 != second1; ++first1, ++first2) {
+            if(*first1 != *first2) {
+                return false;
+            }
+        }
+        return true;
+    }
+    template<typename InputIterator1, typename InputIterator2, typename BinaryOperation>
+    inline bool equal(InputIterator1 first1, InputIterator1 second1, InputIterator2 first2, BinaryOperation op) {
+        for( ; first1 != second1; ++first1, ++first2) {
+            if(!op(*first1, *first2)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     template<typename OutputIterator, typename T>
     OutputIterator fill(OutputIterator first, OutputIterator last, const T &val) {

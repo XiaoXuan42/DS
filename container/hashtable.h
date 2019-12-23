@@ -33,7 +33,7 @@ namespace DS
         }
     }
 
-    template<typename Value, typename Key=Value, typename HashFn=identity<Key>, typename ExtractKey=identity<Key>, typename EqualKey=equal<Key>, typename Alloc=alloc>
+    template<typename Value, typename Key, typename HashFn, typename ExtractKey, typename EqualKey, typename Alloc=alloc>
     class hashtable;
 
     template<typename Value>
@@ -123,15 +123,6 @@ namespace DS
         vector<link_node, Alloc> bucket;        
         size_type num_content;
 
-        size_type bk_num(const value_type &v, size_type n) {
-            return bk_num(get_key(v), n);
-        }
-        size_type bk_num(const key_type &k, size_type n) {
-            return hash(k) % n;
-        }
-        size_type bk_num(const key_type &k) {
-            return bk_num(k, bucket.size());
-        }
 
         void rehash(size_type n);
         pair<link_node, bool> __insert_unique(const value_type &v);
@@ -147,13 +138,23 @@ namespace DS
         hashtable & operator = (const hashtable &other) = default;
         hashtable & operator = (hashtable &&other) = default;
         
-
         size_type buck_size() {
             return bucket.size();
         }
-        size_type bk_num(const value_type &v) {
-            return bk_num(get_key(v));
+
+        size_type bk_num_val(const value_type &v, size_type n) {
+            return bk_num_key(get_key(v), n);
         }
+        size_type bk_num_key(const key_type &k, size_type n) {
+            return hash(k) % n;
+        }
+        size_type bk_num_key(const key_type &k) {
+            return bk_num_key(k, bucket.size());
+        }
+        size_type bk_num_val(const value_type &v) {
+            return bk_num_key(get_key(v));
+        }
+
         iterator begin() {
             size_type index = 0;
             size_type htb_size = buck_size();
@@ -204,7 +205,7 @@ namespace DS
             link_node cur_next;
             while(cur != nullptr) {
                 cur_next = cur->next;
-                new_index = bk_num(cur->val, new_sz);
+                new_index = bk_num_val(cur->val, new_sz);
                 cur->next = new_buck[new_index];
                 new_buck[new_index] = cur;
                 cur = cur_next;
@@ -219,7 +220,7 @@ namespace DS
         if(num_content > buck_size()) {
             rehash(num_content);
         }
-        size_type index = bk_num(v);
+        size_type index = bk_num_val(v);
         link_node cur = bucket[index];
         while(cur != nullptr) {
             if(cur->val == v) {
@@ -234,12 +235,12 @@ namespace DS
     }
 
     HASHTB_TYPE
-    HASHTB_ATTR(link_node) HASHTB_ATTR(__insert_equal) (const HASHTB_ATTR(value_type) &v) {
+    typename HASHTB_ATTR(link_node) HASHTB_ATTR(__insert_equal) (const HASHTB_ATTR(value_type) &v) {
         num_content++;
         if(num_content > buck_size()) {
             rehash(num_content);
         }
-        size_type index = bk_num(v);
+        size_type index = bk_num_val(v);
         link_node new_node = allocate_node();
         new_node->next = bucket[index];
         new_node->val = v;

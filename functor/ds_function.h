@@ -125,7 +125,7 @@ namespace DS
     };
 
     template<typename T1, typename T2=T1>
-    struct equal : public binary_function<T1, T2, bool>
+    struct equal_to : public binary_function<T1, T2, bool>
     {
         constexpr bool operator() (const T1 &x, const T2 &y) const {
             return x == y;
