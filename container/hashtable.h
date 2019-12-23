@@ -179,7 +179,7 @@ namespace DS
         hashtable(size_type n, const HashFn &fn, const EqualKey& eql): hash(fn), get_key(ExtractKey()), equals(eql), num_content(0) {
             initialize_buckets(n);
         }
-        hashtable(size_type n): hash(HashFn()), get_key(ExtractKey()), equals(EqualKey()), num_content(0) {
+        explicit hashtable(size_type n): hash(HashFn()), get_key(ExtractKey()), equals(EqualKey()), num_content(0) {
             initialize_buckets(n);
         }
         hashtable(): hash(HashFn()), get_key(ExtractKey()), equals(EqualKey()), num_content(0) {
@@ -237,6 +237,13 @@ namespace DS
             }
         }
 
+        bool empty() const {
+            return num_content == 0;
+        }
+        size_type size() const {
+            return num_content;
+        }
+
         iterator begin() const {
             size_type index = 0;
             size_type htb_size = buck_size();
@@ -271,6 +278,124 @@ namespace DS
             ans.htb = this;
             ans.p = result;
             return ans;
+        }
+        void swap(hashtable &other) {
+            swap(bucket, other.bucket);
+            swap(num_content, other.num_content);
+        }
+
+        iterator find(const value_type &v) const {
+            size_type index = bk_num_val(v);
+            link_node cur = bucket[index];
+            iterator result;
+            while(cur != nullptr) {
+                if(equals(get_key(cur->val), get_val(v))) {
+                    result.htb = this;
+                    result.p = cur;
+                    return result;
+                }
+                cur = cur->next;
+            }
+            return end();
+        }
+        void erase(iterator it) {
+            if(it.htb != this || it == end()) return;
+            size_type index = bk_num_key(get_key(*it));
+            link_node cur = bucket[index];
+            if(cur == nullptr) return;
+            if(it.p == cur) {
+                bucket[index] = cur->next;
+                deallocate_node(cur);
+                num_content--;
+            }
+            else {
+                link_node pre = cur;
+                cur = cur->next;
+                while(cur != nullptr) {
+                    if(cur == it.p) {
+                        pre->next = cur->next;
+                        deallocate_node(cur);
+                        num_content--;
+                        return;
+                    }
+                    pre = cur;
+                    cur = cur->next;
+                }
+            }
+        }
+        void erase(iterator l, iterator r) {
+            if(l->htb != this || r->htb != this) return;
+
+            size_type index = bk_num_val(*l);
+            link_node cur, pre;
+            if(bucket[index] == l->p) {
+                while(bucket[index] != nullptr && bucket[index] != r->p) {
+                    cur =  bucket[index];
+                    bucket[index] = bucket[index]->next;
+                    deallocate_node(cur);
+                }
+            }
+            else {
+                pre = bucket[index];
+                cur = bucket[index]->next;
+                while(cur != nullptr) {
+                    if(cur == l.p) {
+                        break;
+                    }
+                    else {
+                        pre = cur;
+                        cur = cur->next;
+                    }
+                }
+                while(cur != nullptr) {
+                    if(cur == r.p) {
+                        // note that if r is end() then this will never be true
+                        return;
+                    }
+                    pre->next = cur->next;
+                    deallocate_node(cur);
+                    cur = pre->next;
+                }
+            }
+            size_type htb_size = buck_size();
+            index++;
+            for( ; index < htb_size; ++index) {
+                while(bucket[index] != nullptr) {
+                    if(bucket[index] == r.p) {
+                        // note that if r is end() then this will never be true
+                        return;
+                    }
+                    else {
+                        cur = bucket[index];
+                        bucket[index] = bucket[index]->next;
+                        deallocate_node(cur);
+                    }
+                }
+            }
+        }
+        void erase(const value_type &v) {
+            size_type index = bk_num_val(v);
+            link_node cur, pre;
+            while(bucket[index] != nullptr && equals(get_key(bucket[index]->val), get_key(v))) {
+                cur = bucket[index];
+                bucket[index] = bucket[index]->next;
+                deallocate_node(cur);
+                num_content--;
+            }
+            pre = bucket[index];
+            cur = bucket[index]->next;
+            while(cur != nullptr) {
+                if(equals(get_key(cur->val), get_key(v))) {
+                    pre->next = cur->next;
+                    deallocate_node(cur);
+                    cur = pre->next;
+                    num_content--;
+                }
+                else {
+                    pre = cur;
+                    cur = cur->next;
+                }
+            }
         }
     };
     #define HASHTB_TYPE template<typename Value, typename Key, typename HashFn, typename ExtractKey, typename EqualKey, typename Alloc>    
