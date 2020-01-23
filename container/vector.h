@@ -100,6 +100,7 @@ namespace DS {
         ~vector() {
             destroy(start, finish);
             deallocate();
+            start = finish = end_of_storage = nullptr;
         }
         vector(const vector &rhs) {
             start = data_alloc::allocate(rhs.capacity());
@@ -225,6 +226,9 @@ namespace DS {
             erase(begin(), end());
         }
         reference operator [] (size_type n) {
+            return *(begin() + n);
+        }
+        const_reference operator [] (size_type n) const {
             return *(begin() + n);
         }
         void reserve(const size_type n) {

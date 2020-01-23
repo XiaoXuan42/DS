@@ -13,10 +13,10 @@ namespace {
     typedef unsigned long long hash_ds_prime;
     const int __ds_prime_nums = 28;
     const hash_ds_prime __ds_prime_list[__ds_prime_nums] = {
-        53, 97, 193, 389, 796, 1543, 3079, 6151, 12289,
-        24593, 49157, 98317, 196613, 393241, 786433,
-        1572896, 3145739, 6291469, 12582917, 25165843, 50331653,
-        10063319, 201326611, 402653189, 805306457, 1610612741,
+        53ull, 97ull, 193ull, 389ull, 796ull, 1543ull, 3079ull, 6151ull, 12289ull,
+        24593ull, 49157ull, 98317ull, 196613ull, 393241ull, 786433ull,
+        1572896ull, 3145739ull, 6291469ull, 12582917ull, 25165843ull, 50331653ull,
+        10063319ull, 201326611ull, 402653189ull, 805306457ull, 1610612741ull,
         3221225473ull, 4294967291ull
     };
     hash_ds_prime hash_lower_bound_prime(hash_ds_prime x) {
@@ -33,9 +33,6 @@ namespace {
 }
 namespace DS
 {
-    namespace {
-    }
-
     template<typename Value, typename Key, typename HashFn, typename ExtractKey, typename EqualKey, typename Alloc=alloc>
     class hashtable;
 
@@ -59,6 +56,7 @@ namespace DS
         typedef hashtable<Value, Key, HashFn, ExtractKey, EqualKey, Alloc> htable;
         typedef __hashtable_node<Value> node;
         typedef __hashtable_iterator<Value, Key, HashFn, ExtractKey, EqualKey, Alloc> iterator;
+        typedef const iterator const_iterator;
         typedef typename hashtable<Value, Key, HashFn, ExtractKey, EqualKey, Alloc>::size_type size_type;
 
         node *p;
@@ -100,6 +98,7 @@ namespace DS
     {
     public:
         typedef __hashtable_iterator<Value, Key, HashFn, ExtractKey, EqualKey, Alloc> iterator;
+        typedef const iterator const_iterator;
         typedef Value value_type;
         typedef Value& reference;
         typedef Value* pointer;
@@ -107,7 +106,6 @@ namespace DS
         typedef Key key_type;
     private:
         typedef hashtable<Value, Key, HashFn, ExtractKey, EqualKey, Alloc> self;
-    private:
         typedef __hashtable_node<Value> node_type;
         typedef node_type* link_node;
         typedef simple_alloc<node_type, Alloc> node_alloc;
@@ -143,9 +141,6 @@ namespace DS
             bucket.reserve(n_buckets);
             bucket.insert(bucket.end(), n_buckets, nullptr);
             num_content = 0;
-        }
-        void deallocate() {
-            bucket.~vector();    
         }
         void copy_from(const hashtable &other) {
             clear();
@@ -194,7 +189,6 @@ namespace DS
         }
         ~hashtable() {
             clear();
-            deallocate();
         }
         hashtable & operator = (const hashtable &other) {
             copy_from(other);
@@ -209,16 +203,16 @@ namespace DS
             return bucket.size();
         }
 
-        size_type bk_num_val(const value_type &v, size_type n) {
+        size_type bk_num_val(const value_type &v, size_type n) const {
             return bk_num_key(get_key(v), n);
         }
-        size_type bk_num_key(const key_type &k, size_type n) {
+        size_type bk_num_key(const key_type &k, size_type n) const {
             return hash(k) % n;
         }
-        size_type bk_num_key(const key_type &k) {
+        size_type bk_num_key(const key_type &k) const {
             return bk_num_key(k, bucket.size());
         }
-        size_type bk_num_val(const value_type &v) {
+        size_type bk_num_val(const value_type &v) const {
             return bk_num_key(get_key(v));
         }
 
@@ -230,25 +224,25 @@ namespace DS
                 link_node cur = bucket[index];
                 while(cur != nullptr) {
                     bucket[index] = cur->next;
-                    destroy(&(cur->val));
-                    node_alloc::deallocate(cur);
+                    deallocate_node(cur);
                     cur = bucket[index];
                 }
+                index++;
             }
         }
 
         bool empty() const {
             return num_content == 0;
         }
-        size_type size() const {
+        size_type size() {
             return num_content;
         }
 
-        iterator begin() const {
+        const_iterator begin() const {
             size_type index = 0;
             size_type htb_size = buck_size();
             iterator result;
-            result.htb = this;
+            result.htb = const_cast<self*>(this);
             result.p = nullptr;
             for(index = 0; index < htb_size; index++) {
                 if(bucket[index] != nullptr) {
@@ -258,12 +252,18 @@ namespace DS
             }
             return result;
         }
-        iterator end() const {
+        const_iterator end() const {
             iterator result;
-            result.htb = this;
+            result.htb = const_cast<self*>(this);
             result.p = nullptr;
             return result;
-        }  
+        }
+        iterator begin() {
+            return static_cast<const self*>(this)->begin();
+        }
+        iterator end() {
+            return static_cast<const self*>(this)->end();
+        }
         pair<iterator, bool> insert_unique(const value_type &v) {
             pair<link_node, bool> result = __insert_unique(v);
             pair<iterator, bool> ans;
@@ -284,13 +284,13 @@ namespace DS
             swap(num_content, other.num_content);
         }
 
-        iterator find(const value_type &v) const {
+        const_iterator find(const value_type &v) const {
             size_type index = bk_num_val(v);
             link_node cur = bucket[index];
             iterator result;
             while(cur != nullptr) {
-                if(equals(get_key(cur->val), get_val(v))) {
-                    result.htb = this;
+                if(equals(get_key(cur->val), get_key(v))) {
+                    result.htb = const_cast<self*>(this);
                     result.p = cur;
                     return result;
                 }
@@ -298,11 +298,18 @@ namespace DS
             }
             return end();
         }
+        iterator find(const value_type &v) {
+            return static_cast<const self*>(this)->find(v);
+        }
         void erase(iterator it) {
-            if(it.htb != this || it == end()) return;
+            if(it.htb != this || it == end())
+                return;
             size_type index = bk_num_key(get_key(*it));
+            if(index > buck_size())
+                return;
             link_node cur = bucket[index];
-            if(cur == nullptr) return;
+            if(cur == nullptr)
+                return;
             if(it.p == cur) {
                 bucket[index] = cur->next;
                 deallocate_node(cur);
@@ -334,6 +341,8 @@ namespace DS
                     bucket[index] = bucket[index]->next;
                     deallocate_node(cur);
                 }
+                if(r->p != nullptr && bucket[index] == r->p)
+                    return;
             }
             else {
                 pre = bucket[index];
@@ -349,7 +358,6 @@ namespace DS
                 }
                 while(cur != nullptr) {
                     if(cur == r.p) {
-                        // note that if r is end() then this will never be true
                         return;
                     }
                     pre->next = cur->next;
@@ -362,7 +370,6 @@ namespace DS
             for( ; index < htb_size; ++index) {
                 while(bucket[index] != nullptr) {
                     if(bucket[index] == r.p) {
-                        // note that if r is end() then this will never be true
                         return;
                     }
                     else {
@@ -376,14 +383,21 @@ namespace DS
         void erase(const value_type &v) {
             size_type index = bk_num_val(v);
             link_node cur, pre;
+            if(index >= buck_size())
+                return;
             while(bucket[index] != nullptr && equals(get_key(bucket[index]->val), get_key(v))) {
                 cur = bucket[index];
                 bucket[index] = bucket[index]->next;
                 deallocate_node(cur);
-                num_content--;
             }
+            if(bucket[index] == nullptr)
+                return;
             pre = bucket[index];
             cur = bucket[index]->next;
+            while(equals(get_key(pre->val), get_key(v))) {
+                pre = cur;
+                cur = cur->next; 
+            }
             while(cur != nullptr) {
                 if(equals(get_key(cur->val), get_key(v))) {
                     pre->next = cur->next;
@@ -404,6 +418,8 @@ namespace DS
     HASHTB_TYPE
     void HASHTB_ATTR(rehash) (HASHTB_ATTR(size_type) n) {
         size_type new_sz = hash_lower_bound_prime(n);
+        if(new_sz < buck_size())
+            return;
         vector<link_node, Alloc> new_buck(new_sz, nullptr);
         size_type index = 0, hbt_size = buck_size();
         size_type new_index;
