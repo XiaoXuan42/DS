@@ -135,7 +135,6 @@ namespace DS
         vector<link_node, Alloc> bucket;        
         size_type num_content;
 
-
         void rehash(size_type n);
         pair<link_node, bool> __insert_unique(const value_type &v);
         link_node __insert_equal(const value_type &v);
@@ -291,12 +290,12 @@ namespace DS
             swap(num_content, other.num_content);
         }
 
-        const_iterator find(const value_type &v) const {
-            size_type index = bk_num_val(v);
+        const_iterator find(const key_type &v) const {
+            size_type index = bk_num_key(v);
             link_node cur = bucket[index];
             iterator result;
             while(cur != nullptr) {
-                if(equals(get_key(cur->val), get_key(v))) {
+                if(equals(get_key(cur->val), v)) {
                     result.htb = const_cast<self*>(this);
                     result.p = cur;
                     return result;
@@ -305,7 +304,7 @@ namespace DS
             }
             return end();
         }
-        iterator find(const value_type &v) {
+        iterator find(const key_type &v) {
             return static_cast<const self*>(this)->find(v);
         }
         void erase(iterator it) {
@@ -390,12 +389,12 @@ namespace DS
                 }
             }
         }
-        void erase(const value_type &v) {
-            size_type index = bk_num_val(v);
+        void erase(const key_type &v) {
+            size_type index = bk_num_key(v);
             link_node cur, pre;
             if(index >= buck_size())
                 return;
-            while(bucket[index] != nullptr && equals(get_key(bucket[index]->val), get_key(v))) {
+            while(bucket[index] != nullptr && equals(get_key(bucket[index]->val), v)) {
                 cur = bucket[index];
                 bucket[index] = bucket[index]->next;
                 deallocate_node(cur);
@@ -405,12 +404,12 @@ namespace DS
                 return;
             pre = bucket[index];
             cur = bucket[index]->next;
-            while(equals(get_key(pre->val), get_key(v))) {
+            while(equals(get_key(pre->val), v)) {
                 pre = cur;
                 cur = cur->next; 
             }
             while(cur != nullptr) {
-                if(equals(get_key(cur->val), get_key(v))) {
+                if(equals(get_key(cur->val), v)) {
                     pre->next = cur->next;
                     deallocate_node(cur);
                     cur = pre->next;
