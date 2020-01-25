@@ -18,19 +18,19 @@ namespace DS
     template<>
     struct hash<char*>
     {
-        ds_hash_type operator()(const char * s) { return __ds_hash_string(s); }
+        ds_hash_type operator()(const char * s) const { return __ds_hash_string(s); }
     };
     template<>
     struct hash<const char*>
     {
-        ds_hash_type operator()(const char * s) { return __ds_hash_string(s); }
+        ds_hash_type operator()(const char * s) const { return __ds_hash_string(s); }
     };
 
     #define hash_same_def(type_name) template<> struct hash<type_name> {\
-        ds_hash_type operator() (const type_name s) { return s; } \
+        ds_hash_type operator() (const type_name s) const { return s; } \
     }; \
     template<> struct hash<const type_name> {\
-        ds_hash_type operator() (const type_name s) { return s; } \
+        ds_hash_type operator() (const type_name s) const { return s; } \
     };
 
     hash_same_def(char);

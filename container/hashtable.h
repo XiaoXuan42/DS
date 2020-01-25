@@ -101,9 +101,13 @@ namespace DS
         typedef const iterator const_iterator;
         typedef Value value_type;
         typedef Value& reference;
+        typedef const reference const_reference;
         typedef Value* pointer;
+        typedef const pointer const_pointer;
         typedef size_t size_type;
         typedef Key key_type;
+        typedef HashFn hasher;
+        typedef EqualKey key_equal;
     private:
         typedef hashtable<Value, Key, HashFn, ExtractKey, EqualKey, Alloc> self;
         typedef __hashtable_node<Value> node_type;
@@ -124,9 +128,9 @@ namespace DS
         }
 
     private:
-        HashFn hash;
+        hasher hash;
         ExtractKey get_key;
-        EqualKey equals;
+        key_equal equals;
 
         vector<link_node, Alloc> bucket;        
         size_type num_content;
@@ -174,10 +178,13 @@ namespace DS
         hashtable(size_type n, const HashFn &fn, const EqualKey& eql): hash(fn), get_key(ExtractKey()), equals(eql), num_content(0) {
             initialize_buckets(n);
         }
-        explicit hashtable(size_type n): hash(HashFn()), get_key(ExtractKey()), equals(EqualKey()), num_content(0) {
+        hashtable(size_type n, const HashFn &fn): hash(fn), get_key(ExtractKey()), equals(key_equal()), num_content(n) {
             initialize_buckets(n);
         }
-        hashtable(): hash(HashFn()), get_key(ExtractKey()), equals(EqualKey()), num_content(0) {
+        explicit hashtable(size_type n): hash(hasher()), get_key(ExtractKey()), equals(key_equal()), num_content(0) {
+            initialize_buckets(n);
+        }
+        hashtable(): hash(hasher()), get_key(ExtractKey()), equals(key_equal()), num_content(0) {
             initialize_buckets(0);
         }
         hashtable(const hashtable &other) {
@@ -234,7 +241,7 @@ namespace DS
         bool empty() const {
             return num_content == 0;
         }
-        size_type size() {
+        size_type size() const {
             return num_content;
         }
 
@@ -340,6 +347,7 @@ namespace DS
                     cur =  bucket[index];
                     bucket[index] = bucket[index]->next;
                     deallocate_node(cur);
+                    num_content--;
                 }
                 if(r->p != nullptr && bucket[index] == r->p)
                     return;
@@ -363,6 +371,7 @@ namespace DS
                     pre->next = cur->next;
                     deallocate_node(cur);
                     cur = pre->next;
+                    num_content--;
                 }
             }
             size_type htb_size = buck_size();
@@ -376,6 +385,7 @@ namespace DS
                         cur = bucket[index];
                         bucket[index] = bucket[index]->next;
                         deallocate_node(cur);
+                        num_content--;
                     }
                 }
             }
@@ -389,6 +399,7 @@ namespace DS
                 cur = bucket[index];
                 bucket[index] = bucket[index]->next;
                 deallocate_node(cur);
+                num_content--;
             }
             if(bucket[index] == nullptr)
                 return;
@@ -445,11 +456,13 @@ namespace DS
             if(equals(get_key(cur->val), get_key(v))) {
                 return pair<link_node, bool>(cur, false);
             }
+            cur = cur->next;
         }
 
         num_content++;
         if(num_content > buck_size()) {
             rehash(num_content);
+            index = bk_num_val(v); // index may be changed after rehash!
         }
         link_node new_node = allocate_node(v);
         new_node->next = bucket[index];
