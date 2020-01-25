@@ -290,12 +290,24 @@ namespace DS
             swap(num_content, other.num_content);
         }
 
-        const_iterator find(const key_type &v) const {
-            size_type index = bk_num_key(v);
+        size_type count(const key_type &k) const {
+            size_type index = bk_num_key(k);
+            link_node cur = bucket[index];
+            size_type result = 0;
+            while(cur != nullptr) {
+                if(equals(get_key(cur->val), k)) {
+                    result++;
+                }
+                cur = cur->next;
+            }
+            return result;
+        }
+        const_iterator find(const key_type &k) const {
+            size_type index = bk_num_key(k);
             link_node cur = bucket[index];
             iterator result;
             while(cur != nullptr) {
-                if(equals(get_key(cur->val), v)) {
+                if(equals(get_key(cur->val), k)) {
                     result.htb = const_cast<self*>(this);
                     result.p = cur;
                     return result;

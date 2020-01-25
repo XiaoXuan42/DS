@@ -58,8 +58,9 @@ namespace DS
         iterator find(const key_type &v) const {
             return htb.find(v);
         }
-        // size_type count() const {
-        // }
+        size_type count(const key_type &k) const {
+            return htb.count(k);
+        }
         void erase(iterator it) {
             htb.erase(it);
         }
