@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../iter/iter.h"
+#include "../functor/ds_function.h"
 
 /*
 this file includes several algorithms used for numeric computing
@@ -133,5 +134,4 @@ namespace DS
         *result = *first;
         return __partial_sum(first, last, result, op, value_type(first));
     }
-    //TODO: add: pow
 }
