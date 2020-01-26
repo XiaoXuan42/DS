@@ -96,4 +96,109 @@ namespace DS
     inline pointer_to_binary_function<Arg1, Arg2, Result> ptr_fun(Result (*x)(Arg1, Arg2)) {
         return pointer_to_binary_function<Arg1, Arg2, Result>(x);
     }
+    template<typename S, class T>
+    class mem_fun_t : public unary_function<T*, S>
+    {
+    public:
+        explicit mem_fun_t(S (T::*pf)()): f(pf) {}
+        S operator()(T *p) const { return (p->*f)(); }
+    private:
+        S (T::*f)();
+    };
+    template<typename S, class T>
+    class const_mem_fun_t : public unary_function<const T*, S>
+    {
+    public:
+        explicit const_mem_fun_t(S (T::*pf)() const): f(pf) {}
+        S operator()(const T *p) const { return (p->*f)(); }
+    private:
+        S (T::*f)() const;
+    };
+    template<typename S, class T>
+    class mem_fun_ref_t : public unary_function<T, S>
+    {
+    public:
+        explicit mem_fun_ref_t(S (T::*pf)()): f(pf) {}
+        S operator()(T &r) const { return (r.*f)(); }
+    private:
+        S (T::*f)();
+    };
+    template<typename S, class T>
+    class const_mem_fun_ref_t : public unary_function<const T, S>
+    {
+    public:
+        explicit const_mem_fun_ref_t(S (T::*pf)() const): f(pf) {}
+        S operator()(const T &r) const { return (r.*f)(); }
+    private:
+        S (T::*f)() const;
+    };
+    template<typename S, class T, typename A>
+    class mem_fun1_t : public binary_function<T*, A, S>
+    {
+    public:
+        explicit mem_fun1_t(S (T::*pf)(A)): f(pf) {}
+        S operator()(T *p, A arg) const { return (p->*f)(arg); }
+    private:
+        S (T::*f)(A);
+    };
+    template<typename S, class T, typename A>
+    class const_mem_fun1_t : public binary_function<const T*, A, S>
+    {
+    public:
+        explicit const_mem_fun1_t(S (const T::*pf)(A) const): f(pf) {}
+        S operator()(const T *p, A arg) const { return (p->*f)(arg); }
+    private:
+        S (T::*f)(A) const;
+    }; 
+    template<typename S, class T, typename A>
+    class mem_fun1_ref_t : public binary_function<T, A, S>
+    {
+    public:
+        explicit mem_fun1_ref_t(S (T::*pf)(A)): f(pf) {}
+        S operator()(T &r, A arg) const { return (r.*f)(arg); }
+    private:
+        S (T::*f)(A);
+    }; 
+    template<typename S, class T, typename A>
+    class const_mem_fun1_ref_t : public binary_function<const T, A, S>
+    {
+    public:
+        explicit const_mem_fun1_t(S (T::*pf)(A) const): f(pf) {}
+        S operator()(const T &r, A arg) const { return (r.*f)(arg); }
+    private:
+        S (T::*f)(A) const;
+    };
+
+    template<typename S, class T>
+    inline mem_fun_t<S, T> mem_fun(S (T::*f)()) {
+        return mem_fun_t<S, T>(f);
+    }
+    template<typename S, class T>
+    inline const_mem_fun_t<S, T> mem_fun(S (T::*f)() const) {
+        return const_mem_fun_t<S, T>(f);
+    }
+    template<typename S, class T>
+    inline mem_fun_ref_t<S, T> mem_fun_ref(S (T::*f)()) {
+        return mem_fun_ref_t<S, T>(f);
+    }
+    template<typename S, class T>
+    inline const_mem_fun_ref_t<S, T> mem_fun_ref(S (T::*f)() const) {
+        return const_mem_fun_ref_t<S, T>(f);
+    }
+    template<typename S, class T>
+    inline mem_fun_t<S, T> mem_fun1(S (T::*f)()) {
+        return mem_fun_t<S, T>(f);
+    }
+    template<typename S, class T>
+    inline const_mem_fun_t<S, T> mem_fun1(S (T::*f)() const) {
+        return const_mem_fun_t<S, T>(f);
+    }
+    template<typename S, class T>
+    inline mem_fun_ref_t<S, T> mem_fun1_ref(S (T::*f)()) {
+        return mem_fun_ref_t<S, T>(f);
+    }
+    template<typename S, class T>
+    inline const_mem_fun_ref_t<S, T> mem_fun1_ref(S (T::*f)() const) {
+        return const_mem_fun_ref_t<S, T>(f);
+    }
 };
