@@ -113,14 +113,28 @@ namespace DS
     struct greater : public binary_function<T1, T2, bool>
     {
         constexpr bool operator() (const T1 &x, const T2 &y) const {
-            return x > y;
+            return !(x < y || x == y);
+        }
+    };
+    template<typename T1, typename T2 = T1>
+    struct greater_equal : public binary_function<T1, T2, bool>
+    {
+        constexpr bool operator() (const T1 &x, const T2 &y) const {
+            return !(x < y);
         }
     };
     template<typename T1, typename T2 = T1>
     struct less : public binary_function<T1, T2, bool>
     {
         constexpr bool operator() (const T1 &x, const T2 &y) const {
-            return x < y;
+            return x < y; 
+        }
+    };
+    template<typename T1, typename T2 = T1>
+    struct less_equal : public binary_function<T1, T2, bool>
+    {
+        constexpr bool operator() (const T1 &x, const T2 &y) const {
+            return x < y || x == y;
         }
     };
 
@@ -131,4 +145,43 @@ namespace DS
             return x == y;
         }
     };
+
+    template<typename T1, typename T2=T1>
+    struct not_equal_to : public binary_function<T1, T2, bool>
+    {
+        constexpr bool operator() (const T1 &x, const T2 &y) const {
+            return !(x == y);
+        }
+    };
+
+    template<typename T>
+    struct logical_and : public binary_function<T, T, bool>
+    {
+        constexpr bool operator() (const T &x, const T &y) const {
+            return x && y;
+        }
+    };
+    template<typename T>
+    struct logical_or : public binary_function<T, T, bool>
+    {
+        constexpr bool operator() (const T &x, const T &y) const {
+            return x || y;
+        }
+    };
+    template<typename T>
+    struct logical_not : public unary_function<T, bool>
+    {
+        constexpr bool operator()(const T &x) const {
+            return !x;
+        }
+    };
+
+    template<typename T>
+    inline T identity_element(plus<T>) {
+        return T(0);
+    }
+    template<typename T>
+    inline T identity_element(multiplies<T>) {
+        return T(1);
+    }
 }
