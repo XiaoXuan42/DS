@@ -1,5 +1,5 @@
 #pragma once
-#include<iterator>
+#include <iostream>
 #include "../iter/iter.h"
 
 std::back_insert_iterator<int> bk;
@@ -132,6 +132,63 @@ namespace DS
         reference operator[] (difference_type n) const {
             return *(*this + n);
         }
+    };
+
+    template<typename T, typename Distance = ptrdiff_t>
+    class istream_iterator;
+
+    template<typename T, typename Distance>
+    bool operator == (const istream_iterator<T, Distance>&x, const istream_iterator<T, Distance>&y);
+    template<typename T, typename Distance = ptrdiff_t>
+    class istream_iterator : public iterator<input_iterator_tag, T, Distance, const T&, const T*>
+    {
+        friend bool operator == <>(const istream_iterator<T, Distance>&x, const istream_iterator<T, Distance>&y);
+    protected:
+        std::istream* stream;
+        T value;
+        bool end_marker;
+        void read() {
+            end_marker = (*stream) ? true : false;
+            if(end_marker)
+                *stream >> value;
+            end_marker = (*stream) ? true : false;
+        }
+    public:
+        istream_iterator() : stream(&std::cin), end_marker(false) {}
+        istream_iterator(std::istream &s) : stream(&s), { read(); }
+        reference operator*() const { return value; }
+        pointer operator->() const { return &(operator*()); }
+        istream_iterator<T, Distance>& operator++() {
+            read();
+            return *this;
+        }
+        istream_iterator<T, Distance> operator++(int) {
+            istream_iterator<T, Distance> tmp = *this;
+            read();
+            return tmp;
+        }
+    };
+    template<typename T, typename Distance>
+    bool operator == (const istream_iterator<T, Distance>&x, const istream_iterator<T, Distance>&y) {
+        return x.stream == y.stream && x.end_marker == y.end_marker;
+    }
+    template<typename T, typename Distance = ptrdiff_t>
+    class ostream_iterator : public iterator<output_iterator_tag, void, void, void, void>
+    {
+    protected:
+        std::ostream* stream;
+        const char *string;
+    public:
+        ostream_iterator(ostream &s) : stream(&s), string(nullptr) {}
+        ostream_iterator(ostream &s, const char *c) : stream(&s), string(c) {}
+        ostream_iterator<T>& operator=(const T &value) {
+            *stream << value;
+            if(string) *stream << string;
+            return *this;
+        }
+        ostream_iterator<T> &operator*() = delete;
+        ostream_iterator<T> &operator++() = delete;
+        ostream_iterator<T> operator++(int) = delete;
     };
 }
 
