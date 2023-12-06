@@ -6,7 +6,7 @@
 #include "../functor/ds_function.h"
 #include "../container/pair.h"
 
-namespace DS
+namespace xxds
 {
     template<typename Key, typename Value, typename HashFn = hash<Key>, typename EqualKey = equal_to<Key>, typename Alloc = alloc>
     class hashmap

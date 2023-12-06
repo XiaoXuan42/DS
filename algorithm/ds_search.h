@@ -2,7 +2,7 @@
 
 #include "../iter/iter.h"
 
-namespace DS
+namespace xxds
 {
     template<typename ForwardIterator, typename T>
     ForwardIterator lower_bound(ForwardIterator start, ForwardIterator end, T element) {

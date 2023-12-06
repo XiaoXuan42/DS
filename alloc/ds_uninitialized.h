@@ -3,7 +3,7 @@
 #include "../traits/type_traits.h"
 #include "../algorithm/ds_algobase.h"
 
-namespace DS {
+namespace xxds {
     template<typename InputIterator, typename ForwardIterator>
     inline ForwardIterator __uninitialized_copy_aux(InputIterator first, InputIterator last, ForwardIterator result, ds_false_type ft) {
         ForwardIterator cur = result;

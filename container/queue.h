@@ -5,7 +5,7 @@
 #include "../functor/ds_function.h"
 
 // queue
-namespace DS {
+namespace xxds {
     template<typename T, typename Sequence = deque<T> >
     class queue
     {
@@ -45,7 +45,7 @@ namespace DS {
 }
 
 // priority_queue: default: max-heap
-namespace DS {
+namespace xxds {
     template<typename T, class Cmp = greater<T> >
     class priority_queue
     {

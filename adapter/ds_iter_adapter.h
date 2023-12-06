@@ -3,7 +3,7 @@
 #include "../iter/iter.h"
 
 std::back_insert_iterator<int> bk;
-namespace DS
+namespace xxds
 {
     template<class Container>
     class back_insert_iterator : public iterator<output_iterator_tag, void, void, void, void>

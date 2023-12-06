@@ -8,7 +8,7 @@ this file includes several algorithms used for numeric computing
 这个文件中有一些数值操作的算法
 */
 
-namespace DS
+namespace xxds
 {
     template<typename InputIterator, typename T> 
     T accumulate(InputIterator first, InputIterator last, T init) {

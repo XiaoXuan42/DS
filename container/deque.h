@@ -8,7 +8,7 @@
 #include "../alloc/ds_construct.h"
 #include "../algorithm/ds_algobase.h"
 
-namespace DS
+namespace xxds
 {
     namespace
     {

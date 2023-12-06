@@ -2,7 +2,7 @@
 
 #include "vector.h"
 
-namespace DS {
+namespace xxds {
     template<typename T, typename Sequence = vector<T> >
     class stack
     {

@@ -3,7 +3,7 @@
 #include "../constant/ds_prime.h"
 #include "../standard/ds_numeric_def.h"
 
-namespace DS
+namespace xxds
 {
     template<typename Key>
     struct hash {};

@@ -3,7 +3,7 @@
 #include "rb_tree.h"
 #include "../functor/ds_function.h"
 
-namespace DS
+namespace xxds
 {
     template<typename Value, typename Alloc = alloc>
     class set

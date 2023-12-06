@@ -22,7 +22,7 @@ namespace {
     hash_ds_prime hash_lower_bound_prime(hash_ds_prime x) {
         const hash_ds_prime * start = __ds_prime_list;
         const hash_ds_prime * end = __ds_prime_list + __ds_prime_nums;
-        const hash_ds_prime * target = DS::lower_bound(start, end, x);
+        const hash_ds_prime * target = xxds::lower_bound(start, end, x);
         if(target == end) {
             return __ds_prime_list[__ds_prime_nums-1];
         }
@@ -31,7 +31,7 @@ namespace {
         }
     }
 }
-namespace DS
+namespace xxds
 {
     template<typename Value, typename Key, typename HashFn, typename ExtractKey, typename EqualKey, typename Alloc=alloc>
     class hashtable;

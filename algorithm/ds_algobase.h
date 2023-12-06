@@ -4,7 +4,7 @@
 #include "../traits/type_traits.h"
 #include "../iter/iter.h"
 
-namespace DS
+namespace xxds
 {
     template<typename InputIterator1, typename InputIterator2>
     inline bool equal(InputIterator1 first1, InputIterator1 second1, InputIterator2 first2) {

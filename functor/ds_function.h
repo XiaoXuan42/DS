@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../container/pair.h"
-namespace DS
+namespace xxds
 {
     template<typename Arg, typename Result>
     struct unary_function

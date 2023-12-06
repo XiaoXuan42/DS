@@ -9,7 +9,7 @@ template<> struct ds_type_traits< name > {\
     typedef ds_true_type is_POD_type;\
 };
 
-namespace DS
+namespace xxds
 {
     struct ds_true_type {};
     struct ds_false_type {};

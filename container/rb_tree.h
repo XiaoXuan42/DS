@@ -6,7 +6,7 @@
 #include "../alloc/ds_memory.h"
 #include <cassert>
 
-namespace DS
+namespace xxds
 {
     namespace {
         typedef bool __rb_tree_color;

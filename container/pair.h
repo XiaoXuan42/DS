@@ -1,6 +1,6 @@
 #pragma once
 
-namespace DS
+namespace xxds
 {
     template<typename A, typename B>
     class pair

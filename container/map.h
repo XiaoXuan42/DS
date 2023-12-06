@@ -5,7 +5,7 @@
 #include "pair.h"
 #include "../functor/ds_function.h"
 
-namespace DS
+namespace xxds
 {
     template<typename Key, typename Value, typename Comp = less<Key>, typename Alloc = alloc>
     class map

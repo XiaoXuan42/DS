@@ -2,7 +2,7 @@
 #include <cstddef>
 #include <cstdlib>
 
-namespace DS {
+namespace xxds {
     struct input_iterator_tag {};
     struct output_iterator_tag {};
     struct forward_iterator_tag : public input_iterator_tag {};

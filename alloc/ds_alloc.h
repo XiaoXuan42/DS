@@ -6,7 +6,7 @@
 #include <new>
 #include <iostream>
 
-namespace DS {
+namespace xxds {
     template<int inst>
     class malloc_alloc_template {
         static void * oom_malloc(const size_t);

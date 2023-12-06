@@ -3,7 +3,7 @@
 #include "../algorithm/ds_algorithm.h"
 #include "../standard/ds_numeric_def.h"
 
-namespace DS
+namespace xxds
 {
     const int __ds_prime_nums = 28;
     const ds_prime_type __ds_prime_list[__ds_prime_nums] = {

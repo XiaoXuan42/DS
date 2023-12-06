@@ -2,7 +2,7 @@
 
 #include "../functor/ds_function.h"
 
-namespace DS
+namespace xxds
 {
     template<typename Predicate>
     class unary_negate : public unary_function<typename Predicate::argument_type, bool>

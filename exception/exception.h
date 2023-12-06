@@ -2,7 +2,7 @@
 
 #include <exception>
 
-namespace DS {
+namespace xxds {
     class DSException : public std::exception
     {
     public:

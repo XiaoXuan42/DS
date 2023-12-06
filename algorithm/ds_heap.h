@@ -11,7 +11,7 @@ default heap: max-heap
 #include "../functor/ds_function.h"
 #include "ds_algobase.h"
 
-namespace DS
+namespace xxds
 {
     namespace
     {

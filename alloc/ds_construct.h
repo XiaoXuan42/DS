@@ -4,7 +4,7 @@
 #include "../iter/iter.h"
 #include "../traits/type_traits.h"
 
-namespace DS {
+namespace xxds {
 
     template<typename T1, typename T2>
     inline void construct(T1 *p, const T2 &value) {

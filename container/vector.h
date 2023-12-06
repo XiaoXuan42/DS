@@ -5,7 +5,7 @@
 #include "../alloc/ds_uninitialized.h"
 #include "../algorithm/ds_algorithm.h"
 
-namespace DS {
+namespace xxds {
     template<typename T, typename Alloc=alloc>
     class vector
     {
@@ -244,9 +244,9 @@ namespace DS {
             }
         }
         void swap(vector &rhs) {
-            DS::swap(start, rhs.start);            
-            DS::swap(finish, rhs.finish);
-            DS::swap(end_of_storage, rhs.end_of_storage);
+            xxds::swap(start, rhs.start);            
+            xxds::swap(finish, rhs.finish);
+            xxds::swap(end_of_storage, rhs.end_of_storage);
         }
     };
 }

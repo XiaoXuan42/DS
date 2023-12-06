@@ -1,6 +1,6 @@
 #pragma once
 
-namespace DS
+namespace xxds
 {
     template<typename ForwardIterator1, typename ForwardIterator2, typename InputIterator>
     void set_union(ForwardIterator1 first1, ForwardIterator1 last1, ForwardIterator2 first2, ForwardIterator2 last2, InputIterator dst) {

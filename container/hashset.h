@@ -4,7 +4,7 @@
 #include "../alloc/ds_alloc.h"
 #include "../container/hashtable.h"
 
-namespace DS
+namespace xxds
 {
     template<typename Value, typename HashFn = hash<Value>, typename EqualKey = equal_to<Value>, typename Alloc = alloc>
     class hashset

@@ -6,7 +6,7 @@
 #include "../algorithm/ds_algorithm.h"
 #include "../iter/iter.h"
 
-namespace DS
+namespace xxds
 {
     namespace {
         template<typename T>
